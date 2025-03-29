@@ -69,7 +69,6 @@
             width: 390px; /* (800 - 10px gap) / 2 */
             height: auto;
             border: 1px solid #ccc;
-            cursor: pointer; /* Indicates clickable */
         }
         .transparent-bg {
             background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
@@ -104,6 +103,7 @@
             canvas {
                 width: 100%;
                 max-width: 100%;
+                cursor: pointer; /* Indicates clickable on mobile */
             }
             h2 {
                 font-size: 1.8em;
@@ -154,6 +154,12 @@
         badgeImages['blackB.png'].src = 'blackB.png';
         badgeImages['orangeB.png'].src = 'orangeB.png';
         badgeImages['whiteB.png'].src = 'whiteB.png';
+
+        // Detect if device is mobile
+        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        
+        // Detect iOS specifically
+        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         function generateLogos() {
             const input = document.getElementById('wordInput').value;
@@ -230,16 +236,58 @@
                         ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
                     }
                 }
-
-                // Add click event listener for download (desktop and mobile)
-                canvas.onclick = () => {
-                    const link = document.createElement('a');
-                    link.download = `${canvasInfo.id}_logo.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    document.body.appendChild(link); // Append to body for mobile compatibility
-                    link.click();
-                    document.body.removeChild(link); // Clean up
-                };
+            });
+            
+            // Add click events after logos are generated
+            setupCanvasClickEvents();
+        }
+        
+        function setupCanvasClickEvents() {
+            canvases.forEach(canvasInfo => {
+                const canvas = document.getElementById(canvasInfo.id);
+                
+                // Remove existing click event to avoid duplicates
+                canvas.onclick = null;
+                
+                // Only add click handlers on mobile
+                if (isMobile) {
+                    canvas.onclick = () => {
+                        const dataUrl = canvas.toDataURL('image/png');
+                        const word = document.getElementById('wordInput').value || 'Logo';
+                        const filename = `${word}_${canvasInfo.id}.png`;
+                        
+                        // Special handling for iOS devices
+                        if (isIOS) {
+                            // For iOS - try to use Share API if available (iOS 12+)
+                            if (navigator.share) {
+                                fetch(dataUrl)
+                                    .then(res => res.blob())
+                                    .then(blob => {
+                                        const file = new File([blob], filename, { type: 'image/png' });
+                                        navigator.share({
+                                            files: [file],
+                                            title: filename
+                                        }).catch(() => {
+                                            // Fallback to normal download if share fails
+                                            window.location.href = dataUrl;
+                                        });
+                                    });
+                            } else {
+                                // Direct download for older iOS
+                                window.location.href = dataUrl;
+                            }
+                        } else {
+                            // For Android and other mobile browsers
+                            const link = document.createElement('a');
+                            link.download = filename;
+                            link.href = dataUrl;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                        }
+                    };
+                }
+                // No click handler on desktop
             });
         }
 
@@ -247,11 +295,13 @@
             const container = document.querySelector('.container');
             const width = Math.min(800, container.clientWidth);
             const canvasWidth = (width > 600) ? 390 : width; // 390px for desktop, full width for mobile
+            
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                 canvas.style.width = `${canvasWidth}px`;
                 canvas.style.height = `${(canvasWidth * 720) / 1280}px`;
             });
+            
             generateLogos();
         }
         
