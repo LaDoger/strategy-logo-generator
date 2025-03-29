@@ -203,7 +203,8 @@
                     ctx.fillStyle = canvasInfo.textColor;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.letterSpacing = `${fontSize * -0.1}px`;
+                    // Adjusted letter spacing: -10% for desktop, -5% for mobile
+                    ctx.letterSpacing = isMobile ? `${fontSize * -0.05}px` : `${fontSize * -0.1}px`;
 
                     ctx.fillText(word, canvas.width/2, canvas.height/2);
 
