@@ -51,9 +51,7 @@
         function imageLoaded() {
             imagesLoaded++;
             if (imagesLoaded === totalImages && !initialDrawComplete) {
-                console.log("All badge images loaded initially.");
-                requestAnimationFrame(generateLogos);
-                initialDrawComplete = true;
+                requestAnimationFrame(generateLogos); initialDrawComplete = true;
             } else if (initialDrawComplete) {
                  requestAnimationFrame(generateLogos);
             }
@@ -61,27 +59,15 @@
 
         ['blackB.png', 'orangeB.png', 'whiteB.png'].forEach(src => {
             if (!badgeImages[src]) {
-                const img = new Image();
-                img.onload = imageLoaded;
+                const img = new Image(); img.onload = imageLoaded;
                 img.onerror = () => { console.error("Failed to load badge image:", src); imageLoaded(); };
-                img.src = src;
-                badgeImages[src] = img;
+                img.src = src; badgeImages[src] = img;
             }
         });
 
-        // --- Revised Browser Detection ---
-        // Check for Safari, EXCLUDING Chrome/Android/CriOS/EdgiOS etc.
         const isSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
-                       navigator.userAgent &&
-                       navigator.userAgent.indexOf('CriOS') == -1 &&
-                       navigator.userAgent.indexOf('FxiOS') == -1 &&
-                       navigator.userAgent.indexOf('EdgiOS') == -1;
-
-        // Use this check to determine if adjustment is needed
+                       navigator.userAgent && !/CriOS|FxiOS|EdgiOS/.test(navigator.userAgent);
         const needsSpacingAdjustment = isSafari;
-        // -------------------------------
-
-        // Log the check result ONCE on load
         console.log("Initial needsSpacingAdjustment Check:", needsSpacingAdjustment, " User Agent:", navigator.userAgent);
 
         function generateLogos() {
@@ -89,118 +75,75 @@
             generateTimeout = setTimeout(() => {
                 const inputText = document.getElementById('wordInput').value;
                 const textToRender = inputText || "";
-
                 if (!initialDrawComplete && imagesLoaded < totalImages) { return; }
 
                 canvases.forEach(canvasInfo => {
-                    const canvas = document.getElementById(canvasInfo.id);
-                    if (!canvas) return;
-                    const ctx = canvas.getContext('2d');
-                    const canvasWidth = canvas.width;
-                    const canvasHeight = canvas.height;
+                    const canvas = document.getElementById(canvasInfo.id); if (!canvas) return;
+                    const ctx = canvas.getContext('2d'); const canvasWidth = canvas.width; const canvasHeight = canvas.height;
 
-                    // Clear and Set Background
                     ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-                    if (canvasInfo.bgColor !== 'transparent') {
-                        ctx.fillStyle = canvasInfo.bgColor;
-                        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-                    }
-
-                     // --- Visual Check (Tied to *new* condition) ---
-                     if (needsSpacingAdjustment) {
-                         ctx.fillStyle = 'blue'; // Changed to blue to confirm change
-                         ctx.fillRect(0, 0, 5, 5); // Draw tiny blue dot if adjustment needed
-                     }
-                     // -----------------------------------------
+                    if (canvasInfo.bgColor !== 'transparent') { ctx.fillStyle = canvasInfo.bgColor; ctx.fillRect(0, 0, canvasWidth, canvasHeight); }
+                    if (needsSpacingAdjustment) { ctx.fillStyle = 'blue'; ctx.fillRect(0, 0, 5, 5); } // Keep blue dot
 
                     if (textToRender) {
-                        const badgeImg = badgeImages[canvasInfo.badge];
-                        let badgeWidth = 0, badgeHeight = 0, badgeGap = 0;
+                        const badgeImg = badgeImages[canvasInfo.badge]; let badgeWidth = 0, badgeHeight = 0, badgeGap = 0;
                         const badgeAspectRatio = (badgeImg && badgeImg.naturalWidth) ? (badgeImg.naturalWidth / badgeImg.naturalHeight) : (534 / 889);
-
-                        // Font Size Calculation
-                        const maxHeightConstraint = canvasHeight * 0.9;
-                        let fontSize = Math.min(maxHeightConstraint, 400);
-
-                        let finalMetrics, textWidth, totalVisualWidth, fontAscent, fontDescent;
-                        let spacingString = '-0px';
+                        const maxHeightConstraint = canvasHeight * 0.9; let fontSize = Math.min(maxHeightConstraint, 400);
+                        let finalMetrics, textWidth, totalVisualWidth, fontAscent, fontDescent; let spacingString = '-0px';
 
                         while (fontSize > 10) {
                              ctx.font = `bold ${fontSize}px Lexend`;
-
-                             // --- Explicit Spacing Calculation & Assignment ---
-                             const desktopSpacingValue = fontSize * -0.1;
-                             const adjustedSpacingValue = fontSize * -0.5; // Adjusted value for Safari (tune this!)
-                             // Use the NEW condition here
+                             const desktopSpacingValue = fontSize * -0.1; const adjustedSpacingValue = fontSize * -0.12;
                              const spacingValueToUse = needsSpacingAdjustment ? adjustedSpacingValue : desktopSpacingValue;
                              spacingString = `${spacingValueToUse}px`;
 
+                             // *** TEST OVERRIDE FOR SAFARI (Inside Loop) ***
+                             if (needsSpacingAdjustment) {
+                                 spacingString = '30px'; // FORCE EXTREME POSITIVE STATIC SPACING
+                                 // console.log(`!!! SAFARI OVERRIDE LOOP: Forcing letterSpacing = '${spacingString}'`);
+                             }
+                             // *** END TEST OVERRIDE ***
                              ctx.letterSpacing = spacingString;
-                             // Log check inside loop is less critical now, but keeping it doesn't hurt
-                             // console.log(`MEASURE LOOP (Canvas ${canvasInfo.id}): Adjust=${needsSpacingAdjustment}, Font=${fontSize}px, Spacing Str='${spacingString}'`);
-                             // --- End Explicit Spacing ---
 
-                             finalMetrics = ctx.measureText(textToRender);
-                             textWidth = finalMetrics.width;
-
-                             fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75;
-                             fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
-                             const textHeightApprox = fontAscent + fontDescent;
-
-                             badgeHeight = fontSize * 0.6;
-                             badgeWidth = badgeHeight * badgeAspectRatio;
-                             badgeGap = fontSize * 0.08;
-                             totalVisualWidth = textWidth + badgeGap + badgeWidth;
-
-                             const maxWidthConstraint = canvasWidth * 0.90;
-
+                             finalMetrics = ctx.measureText(textToRender); textWidth = finalMetrics.width;
+                             fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75; fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
+                             const textHeightApprox = fontAscent + fontDescent; badgeHeight = fontSize * 0.6; badgeWidth = badgeHeight * badgeAspectRatio; badgeGap = fontSize * 0.08;
+                             totalVisualWidth = textWidth + badgeGap + badgeWidth; const maxWidthConstraint = canvasWidth * 0.90;
                              if (textHeightApprox <= maxHeightConstraint && totalVisualWidth <= maxWidthConstraint) { break; }
                              fontSize -= 5;
                         }
                         fontSize = Math.max(10, fontSize);
-
-                        // Recalculate FINAL dimensions & metrics
                         ctx.font = `bold ${fontSize}px Lexend`;
 
                         // --- Apply FINAL Explicit Spacing ---
-                        const finalDesktopSpacingValue = fontSize * -0.1;
-                        const finalAdjustedSpacingValue = fontSize * -0.12; // Use same adjusted value (tune this!)
-                        // Use the NEW condition here
+                        const finalDesktopSpacingValue = fontSize * -0.1; const finalAdjustedSpacingValue = fontSize * -0.12;
                         const finalSpacingValueToUse = needsSpacingAdjustment ? finalAdjustedSpacingValue : finalDesktopSpacingValue;
-                        const finalSpacingString = `${finalSpacingValueToUse}px`;
+                        let finalSpacingString = `${finalSpacingValueToUse}px`;
 
+                        // *** TEST OVERRIDE FOR SAFARI (Final Draw) ***
+                        if (needsSpacingAdjustment) {
+                            finalSpacingString = '30px'; // FORCE EXTREME POSITIVE STATIC SPACING
+                            console.log(`!!! SAFARI OVERRIDE FINAL: Forcing letterSpacing = '${finalSpacingString}'`);
+                        }
+                        // *** END TEST OVERRIDE ***
                         ctx.letterSpacing = finalSpacingString;
-                        // console.log(`-- FINAL DRAW (Canvas ${canvasInfo.id}): Adjust=${needsSpacingAdjustment}, Font=${fontSize}px, Spacing Str='${finalSpacingString}'`);
                         // --- End Final Spacing ---
 
-                        finalMetrics = ctx.measureText(textToRender);
-                        textWidth = finalMetrics.width;
-                        fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75;
-                        fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
-                        badgeHeight = fontSize * 0.6;
-                        badgeWidth = badgeHeight * badgeAspectRatio;
-                        badgeGap = fontSize * 0.08;
-                        totalVisualWidth = textWidth + badgeGap + badgeWidth;
+                        finalMetrics = ctx.measureText(textToRender); textWidth = finalMetrics.width; fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75; fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
+                        badgeHeight = fontSize * 0.6; badgeWidth = badgeHeight * badgeAspectRatio; badgeGap = fontSize * 0.08; totalVisualWidth = textWidth + badgeGap + badgeWidth;
+                        const xMetrics = ctx.measureText('x'); const xAscent = xMetrics.actualBoundingBoxAscent || fontSize * 0.5;
+                        const startX = (canvasWidth / 2) - (totalVisualWidth / 2); const startY = canvasHeight / 2 + (fontAscent - fontDescent) / 2;
 
-                         const xMetrics = ctx.measureText('x');
-                         const xAscent = xMetrics.actualBoundingBoxAscent || fontSize * 0.5;
-
-                        // Positioning & Rendering (unchanged logic)
-                        const startX = (canvasWidth / 2) - (totalVisualWidth / 2);
-                        const startY = canvasHeight / 2 + (fontAscent - fontDescent) / 2;
-                        ctx.fillStyle = canvasInfo.textColor;
-                        ctx.textAlign = 'left';
-                        ctx.textBaseline = 'alphabetic';
+                        // Text Rendering
+                        ctx.fillStyle = canvasInfo.textColor; ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
                         ctx.fillText(textToRender, startX, startY);
+
+                        // Badge Rendering
                         if (badgeImg && badgeImg.complete && badgeImg.naturalHeight !== 0) {
-                            const badgeX = startX + textWidth + badgeGap;
-                            const badgeY = startY - xAscent - (badgeHeight / 2);
+                            const badgeX = startX + textWidth + badgeGap; const badgeY = startY - xAscent - (badgeHeight / 2);
                             ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
                         }
-
-                        // Reset context defaults
-                        ctx.letterSpacing = '0px';
-                        ctx.textAlign = 'start';
+                        ctx.letterSpacing = '0px'; ctx.textAlign = 'start'; // Reset
                     }
                 });
                 setupCanvasClickEvents();
@@ -209,42 +152,28 @@
 
         function setupCanvasClickEvents() { /* ... unchanged ... */
              canvases.forEach(canvasInfo => {
-                const canvas = document.getElementById(canvasInfo.id);
-                 if (!canvas) return;
-                canvas.onclick = null;
-                canvas.style.cursor = 'pointer';
+                const canvas = document.getElementById(canvasInfo.id); if (!canvas) return; canvas.onclick = null; canvas.style.cursor = 'pointer';
                 canvas.onclick = () => {
-                    const dataUrl = canvas.toDataURL('image/png');
-                    const word = document.getElementById('wordInput').value || 'Logo';
+                    const dataUrl = canvas.toDataURL('image/png'); const word = document.getElementById('wordInput').value || 'Logo';
                     const filename = `${word.replace(/[^a-z0-9]/gi, '_')}_${canvasInfo.id}.png`;
-                    const isIOSCheckForShare = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; // Keep specific iOS check just for navigator.share if needed
-                    if (isIOSCheckForShare && navigator.share) { // Use specific check here
+                    const isIOSCheckForShare = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+                    if (isIOSCheckForShare && navigator.share) {
                         fetch(dataUrl).then(res => res.blob()).then(blob => {
                             const file = new File([blob], filename, { type: 'image/png' });
-                            navigator.share({ files: [file], title: filename })
-                                .catch((error) => { console.log('Share API failed:', error); const link = document.createElement('a'); link.href = dataUrl; link.download = filename; link.target = '_blank'; document.body.appendChild(link); link.click(); document.body.removeChild(link); });
+                            navigator.share({ files: [file], title: filename }) .catch((error) => { console.log('Share API failed:', error); const link = document.createElement('a'); link.href = dataUrl; link.download = filename; link.target = '_blank'; document.body.appendChild(link); link.click(); document.body.removeChild(link); });
                         });
-                    } else {
-                        const link = document.createElement('a'); link.download = filename; link.href = dataUrl; document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                    }
+                    } else { const link = document.createElement('a'); link.download = filename; link.href = dataUrl; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
                 };
             });
         }
         function resizeCanvases() { /* ... unchanged ... */
-             const container = document.querySelector('.container'); if (!container) return;
-             const containerWidth = container.clientWidth; const gap = 10; const isMobileLayout = window.innerWidth <= 810;
-             const desktopCanvasWidth = Math.min(390, (containerWidth - gap) / 2);
-            canvases.forEach(canvasInfo => {
-                const canvas = document.getElementById(canvasInfo.id); if (!canvas) return;
-                 let targetWidth = isMobileLayout ? Math.min(containerWidth, 390) : desktopCanvasWidth;
-                canvas.style.width = `${targetWidth}px`; canvas.style.height = `${(targetWidth * 720) / 1280}px`;
-            });
+             const container = document.querySelector('.container'); if (!container) return; const containerWidth = container.clientWidth; const gap = 10; const isMobileLayout = window.innerWidth <= 810; const desktopCanvasWidth = Math.min(390, (containerWidth - gap) / 2);
+            canvases.forEach(canvasInfo => { const canvas = document.getElementById(canvasInfo.id); if (!canvas) return; let targetWidth = isMobileLayout ? Math.min(containerWidth, 390) : desktopCanvasWidth; canvas.style.width = `${targetWidth}px`; canvas.style.height = `${(targetWidth * 720) / 1280}px`; });
              if (imagesLoaded === totalImages || initialDrawComplete) { requestAnimationFrame(generateLogos); }
         }
 
         // Initial setup & Event Listeners
-        window.addEventListener('resize', resizeCanvases);
-        window.addEventListener('load', () => { console.log("Window loaded."); resizeCanvases(); document.fonts.ready.then(() => { console.log("Fonts ready."); requestAnimationFrame(generateLogos); }); });
+        window.addEventListener('resize', resizeCanvases); window.addEventListener('load', () => { console.log("Window loaded."); resizeCanvases(); document.fonts.ready.then(() => { console.log("Fonts ready."); requestAnimationFrame(generateLogos); }); });
         if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) { resizeCanvases(); } else { document.addEventListener('DOMContentLoaded', resizeCanvases); }
 
     </script>
