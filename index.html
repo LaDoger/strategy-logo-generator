@@ -69,9 +69,20 @@
             }
         });
 
-        const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        // Log isIOS status ONCE on load for easier checking without spamming console
-        console.log("Initial iOS Check:", isIOS);
+        // --- Revised Browser Detection ---
+        // Check for Safari, EXCLUDING Chrome/Android/CriOS/EdgiOS etc.
+        const isSafari = navigator.vendor && navigator.vendor.indexOf('Apple') > -1 &&
+                       navigator.userAgent &&
+                       navigator.userAgent.indexOf('CriOS') == -1 &&
+                       navigator.userAgent.indexOf('FxiOS') == -1 &&
+                       navigator.userAgent.indexOf('EdgiOS') == -1;
+
+        // Use this check to determine if adjustment is needed
+        const needsSpacingAdjustment = isSafari;
+        // -------------------------------
+
+        // Log the check result ONCE on load
+        console.log("Initial needsSpacingAdjustment Check:", needsSpacingAdjustment, " User Agent:", navigator.userAgent);
 
         function generateLogos() {
             clearTimeout(generateTimeout);
@@ -95,12 +106,12 @@
                         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
                     }
 
-                     // --- Temporary Visual iOS Check ---
-                     if (isIOS) {
-                         ctx.fillStyle = 'red';
-                         ctx.fillRect(0, 0, 5, 5); // Draw tiny red dot at top-left if iOS is detected
+                     // --- Visual Check (Tied to *new* condition) ---
+                     if (needsSpacingAdjustment) {
+                         ctx.fillStyle = 'blue'; // Changed to blue to confirm change
+                         ctx.fillRect(0, 0, 5, 5); // Draw tiny blue dot if adjustment needed
                      }
-                     // ---------------------------------
+                     // -----------------------------------------
 
                     if (textToRender) {
                         const badgeImg = badgeImages[canvasInfo.badge];
@@ -112,26 +123,25 @@
                         let fontSize = Math.min(maxHeightConstraint, 400);
 
                         let finalMetrics, textWidth, totalVisualWidth, fontAscent, fontDescent;
-                        let spacingString = '-0px'; // Default value
+                        let spacingString = '-0px';
 
                         while (fontSize > 10) {
                              ctx.font = `bold ${fontSize}px Lexend`;
 
                              // --- Explicit Spacing Calculation & Assignment ---
                              const desktopSpacingValue = fontSize * -0.1;
-                             const iosSpacingValue = fontSize * -0.13; // INCREASED negative spacing for iOS test
-                             const spacingValueToUse = isIOS ? iosSpacingValue : desktopSpacingValue;
-                             spacingString = `${spacingValueToUse}px`; // The string to be applied
+                             const adjustedSpacingValue = fontSize * -0.12; // Adjusted value for Safari (tune this!)
+                             // Use the NEW condition here
+                             const spacingValueToUse = needsSpacingAdjustment ? adjustedSpacingValue : desktopSpacingValue;
+                             spacingString = `${spacingValueToUse}px`;
 
-                             // Apply spacing *before* measuring
                              ctx.letterSpacing = spacingString;
+                             // Log check inside loop is less critical now, but keeping it doesn't hurt
+                             // console.log(`MEASURE LOOP (Canvas ${canvasInfo.id}): Adjust=${needsSpacingAdjustment}, Font=${fontSize}px, Spacing Str='${spacingString}'`);
                              // --- End Explicit Spacing ---
 
-                             // *** Add Log INSIDE loop to see it change with font size ***
-                             console.log(`MEASURE LOOP (Canvas ${canvasInfo.id}): iOS=${isIOS}, Font=${fontSize}px, Spacing Str='${spacingString}'`);
-
                              finalMetrics = ctx.measureText(textToRender);
-                             textWidth = finalMetrics.width; // Width depends on spacing applied above
+                             textWidth = finalMetrics.width;
 
                              fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75;
                              fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
@@ -144,30 +154,26 @@
 
                              const maxWidthConstraint = canvasWidth * 0.90;
 
-                             if (textHeightApprox <= maxHeightConstraint && totalVisualWidth <= maxWidthConstraint) {
-                                 break;
-                             }
+                             if (textHeightApprox <= maxHeightConstraint && totalVisualWidth <= maxWidthConstraint) { break; }
                              fontSize -= 5;
                         }
                         fontSize = Math.max(10, fontSize);
 
-                        // Recalculate FINAL dimensions & metrics with chosen fontSize
+                        // Recalculate FINAL dimensions & metrics
                         ctx.font = `bold ${fontSize}px Lexend`;
 
                         // --- Apply FINAL Explicit Spacing ---
                         const finalDesktopSpacingValue = fontSize * -0.1;
-                        const finalIosSpacingValue = fontSize * -0.13; // Use same value as in loop
-                        const finalSpacingValueToUse = isIOS ? finalIosSpacingValue : finalDesktopSpacingValue;
+                        const finalAdjustedSpacingValue = fontSize * -0.12; // Use same adjusted value (tune this!)
+                        // Use the NEW condition here
+                        const finalSpacingValueToUse = needsSpacingAdjustment ? finalAdjustedSpacingValue : finalDesktopSpacingValue;
                         const finalSpacingString = `${finalSpacingValueToUse}px`;
 
-                        // Apply final spacing before drawing
                         ctx.letterSpacing = finalSpacingString;
-                        // *** Add Log BEFORE drawing ***
-                        console.log(`-- FINAL DRAW (Canvas ${canvasInfo.id}): iOS=${isIOS}, Font=${fontSize}px, Spacing Str='${finalSpacingString}'`);
+                        // console.log(`-- FINAL DRAW (Canvas ${canvasInfo.id}): Adjust=${needsSpacingAdjustment}, Font=${fontSize}px, Spacing Str='${finalSpacingString}'`);
                         // --- End Final Spacing ---
 
-
-                        finalMetrics = ctx.measureText(textToRender); // Measure one last time if needed for positioning
+                        finalMetrics = ctx.measureText(textToRender);
                         textWidth = finalMetrics.width;
                         fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75;
                         fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
@@ -179,17 +185,13 @@
                          const xMetrics = ctx.measureText('x');
                          const xAscent = xMetrics.actualBoundingBoxAscent || fontSize * 0.5;
 
-                        // Calculate Positioning
+                        // Positioning & Rendering (unchanged logic)
                         const startX = (canvasWidth / 2) - (totalVisualWidth / 2);
                         const startY = canvasHeight / 2 + (fontAscent - fontDescent) / 2;
-
-                        // Text Rendering
                         ctx.fillStyle = canvasInfo.textColor;
                         ctx.textAlign = 'left';
                         ctx.textBaseline = 'alphabetic';
                         ctx.fillText(textToRender, startX, startY);
-
-                        // Badge Rendering
                         if (badgeImg && badgeImg.complete && badgeImg.naturalHeight !== 0) {
                             const badgeX = startX + textWidth + badgeGap;
                             const badgeY = startY - xAscent - (badgeHeight / 2);
@@ -206,7 +208,7 @@
         }
 
         function setupCanvasClickEvents() { /* ... unchanged ... */
-            canvases.forEach(canvasInfo => {
+             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                  if (!canvas) return;
                 canvas.onclick = null;
@@ -215,7 +217,8 @@
                     const dataUrl = canvas.toDataURL('image/png');
                     const word = document.getElementById('wordInput').value || 'Logo';
                     const filename = `${word.replace(/[^a-z0-9]/gi, '_')}_${canvasInfo.id}.png`;
-                    if (isIOS && navigator.share) {
+                    const isIOSCheckForShare = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream; // Keep specific iOS check just for navigator.share if needed
+                    if (isIOSCheckForShare && navigator.share) { // Use specific check here
                         fetch(dataUrl).then(res => res.blob()).then(blob => {
                             const file = new File([blob], filename, { type: 'image/png' });
                             navigator.share({ files: [file], title: filename })
