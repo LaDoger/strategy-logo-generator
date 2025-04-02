@@ -159,7 +159,7 @@
 
         function generateLogos() {
             const input = document.getElementById('wordInput').value;
-            const word = input ? input + "  " : "";
+            const word = input ? input + "  " : ""; // Add two spaces for badge room
 
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
@@ -167,65 +167,135 @@
 
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+                // Set background
                 if (canvasInfo.bgColor !== 'transparent') {
                     ctx.fillStyle = canvasInfo.bgColor;
                     ctx.fillRect(0, 0, canvas.width, canvas.height);
+                } else {
+                    // Ensure transparency is clear if switching from colored bg
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
                 }
 
+
                 if (word) {
-                    const maxWidth = canvas.width * 0.9;
-                    const maxHeight = canvas.height * 0.9;
-                    let fontSize = 200;
+                    const maxWidth = canvas.width * 0.9; // Max width constraint
+                    const maxHeight = canvas.height * 0.9; // Max height constraint
+                    let fontSize = 200; // Initial guess
+
+                    // --- Font Size Calculation ---
                     ctx.font = `bold ${fontSize}px Lexend`;
-                    let textWidth = ctx.measureText(word).width;
+                    let metrics = ctx.measureText(word);
+                    let textWidth = metrics.width;
+                    // Approximate height based on font size (more accurate methods exist but this is often sufficient)
                     let textHeight = fontSize;
 
+                    // Decrease font size if too wide
                     while (textWidth > maxWidth && fontSize > 20) {
                         fontSize -= 10;
                         ctx.font = `bold ${fontSize}px Lexend`;
-                        textWidth = ctx.measureText(word).width;
+                        metrics = ctx.measureText(word);
+                        textWidth = metrics.width;
                         textHeight = fontSize;
                     }
 
+                    // Optional: Increase font size if too small (within limits)
+                    // Be careful with loops that increase size to avoid infinite loops
                     while (textWidth < maxWidth * 0.8 && textHeight < maxHeight && fontSize < 500) {
-                        fontSize += 10;
-                        ctx.font = `bold ${fontSize}px Lexend`;
-                        textWidth = ctx.measureText(word).width;
-                        textHeight = fontSize;
+                         let nextFontSize = fontSize + 10;
+                         ctx.font = `bold ${nextFontSize}px Lexend`;
+                         let nextMetrics = ctx.measureText(word);
+                         if (nextMetrics.width > maxWidth || nextFontSize > maxHeight) {
+                             // If increasing makes it too big, break and use the current fontSize
+                             ctx.font = `bold ${fontSize}px Lexend`; // Reset to last valid font size
+                             break;
+                         }
+                         fontSize = nextFontSize;
+                         metrics = nextMetrics;
+                         textWidth = metrics.width;
+                         textHeight = fontSize; // Update height approx
                     }
 
-                    fontSize = Math.max(fontSize, 20);
-                    if (textHeight > maxHeight) {
-                        fontSize = Math.floor(maxHeight);
+                    // Final checks and apply final font size
+                    fontSize = Math.max(fontSize, 20); // Ensure minimum size
+                    if (textHeight > maxHeight) { // Check height constraint again
+                         fontSize = Math.floor(maxHeight);
                     }
                     ctx.font = `bold ${fontSize}px Lexend`;
+                    // --- End Font Size Calculation ---
 
+
+                    // --- Text Rendering ---
                     ctx.fillStyle = canvasInfo.textColor;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    // Adjusted letter spacing: -10% for desktop, -50% for mobile
-                    ctx.letterSpacing = isMobile ? `${fontSize * -0.5}px` : `${fontSize * -0.1}px`;
 
-                    ctx.fillText(word, canvas.width/2, canvas.height/2);
+                    // *** THIS IS THE FIX: Use consistent letter spacing ***
+                    ctx.letterSpacing = `${fontSize * -0.1}px`; // Use -10% spacing always
 
+                    // Draw the text (word includes the two spaces)
+                    ctx.fillText(word, canvas.width / 2, canvas.height / 2);
+                    // --- End Text Rendering ---
+
+
+                    // --- Badge Rendering ---
+                    // Measure the *input* word without extra spaces for badge positioning
+                    const inputMetrics = ctx.measureText(input);
+                    const inputWidth = inputMetrics.width;
+
+                    // Calculate badge dimensions relative to font size
                     const badgeHeight = fontSize * 0.6;
-                    const badgeWidth = (534 / 889) * badgeHeight;
+                    const badgeAspectRatio = 534 / 889; // Width / Height of original badge
+                    const badgeWidth = badgeHeight * badgeAspectRatio;
 
-                    const inputWidth = ctx.measureText(input).width;
-                    const badgeX = (canvas.width/2) + (inputWidth/2) - (fontSize * 0.1);
-                    const xMetrics = ctx.measureText('x');
-                    const xHeight = xMetrics.actualBoundingBoxAscent;
-                    const badgeY = (canvas.height/2) - xHeight - (badgeHeight / 2);
+                    // Calculate badge position
+                    // Center of canvas + half the *input* word's width (adjusted by letter spacing)
+                    // Minus a small offset maybe related to the original intent of the two spaces or font metrics
+                    const badgeX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.1); // Adjust offset as needed
+
+                    // Get font ascent for vertical alignment
+                    // Re-measure 'X' with the final font settings to get vertical metrics
+                    const xMetrics = ctx.measureText('X'); // Use a capital letter for consistent height metrics
+                    const fontAscent = xMetrics.actualBoundingBoxAscent || fontSize * 0.75; // Estimate if not available
+
+                    // Center vertically - half font ascent - half badge height
+                    const badgeY = (canvas.height / 2) - (fontAscent / 2) - (badgeHeight / 2) + (fontSize * 0.08) ; // Fine-tune vertical alignment
 
                     const badgeImg = badgeImages[canvasInfo.badge];
-                    if (badgeImg.complete) {
-                        ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
+                    // Ensure image is loaded before drawing
+                    if (badgeImg.complete && badgeImg.naturalHeight !== 0) {
+                         ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
+                    } else {
+                        // If image not loaded yet, trigger redraw when it is
+                        badgeImg.onload = () => {
+                            // Need to redraw *this specific canvas*
+                            // Simplified: just call generateLogos again. Could be optimized.
+                            if (!badgeImg.hasAttribute('data-onload-attached')) {
+                                badgeImg.setAttribute('data-onload-attached', 'true'); // Prevent multiple onload handlers
+                                generateLogos();
+                            }
+                        };
+                         badgeImg.onerror = () => {
+                             console.error("Failed to load badge image:", canvasInfo.badge);
+                         };
                     }
+                    // --- End Badge Rendering ---
                 }
             });
 
-            setupCanvasClickEvents();
+            setupCanvasClickEvents(); // Setup clicks after drawing
         }
+
+        // Make sure initial call happens after images might have started loading
+        window.addEventListener('load', () => {
+            resizeCanvases(); // Contains initial generateLogos call
+        });
+
+        // Trigger redraw if font potentially loads later (basic example)
+        // A more robust solution uses the Font Loading API
+        document.fonts.ready.then(() => {
+             console.log('Fonts ready, redrawing logos.');
+             generateLogos();
+        });
 
         function setupCanvasClickEvents() {
             canvases.forEach(canvasInfo => {
