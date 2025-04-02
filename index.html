@@ -5,6 +5,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
+        /* CSS styles remain the same as the previous version */
         body {
             display: flex;
             flex-direction: column;
@@ -32,6 +33,7 @@
             color: #FA660F;
             letter-spacing: -0.1em;
             padding-bottom: 10px;
+            text-align: center;
         }
         input {
             width: 100%;
@@ -46,17 +48,11 @@
             background: linear-gradient(#FFFFFF, #FFFFFF) padding-box,
                         linear-gradient(to right, #FFB6C1, #FFDAB9, #FFDEAD, #E6E6FA, #B0E0E6, #98FB98, #D8BFD8) border-box;
             animation: gradientShift 8s linear infinite;
+            background-size: 100% 100%, 200% 100%;
         }
         @keyframes gradientShift {
-            0% {
-                background-position: 0% 0%;
-            }
-            100% {
-                background-position: 200% 0%;
-            }
-        }
-        input {
-            background-size: 100% 100%, 200% 100%;
+            0% { background-position: 0% 0%; }
+            100% { background-position: 200% 0%; }
         }
         .canvas-row {
             display: flex;
@@ -64,11 +60,11 @@
             gap: 10px;
             width: 100%;
             max-width: 800px;
+            justify-content: center;
         }
         canvas {
-            width: 390px;
-            height: auto;
             border: 1px solid #ccc;
+            display: block;
         }
         .transparent-bg {
             background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
@@ -81,43 +77,30 @@
         footer {
             width: 100%;
             text-align: center;
-            padding: 10px 0;
+            padding: 15px 0 10px 0;
             background-color: #FFFFFF;
             font-weight: 400;
+            margin-top: auto;
         }
-        footer a {
-            color: #FA660F;
-            text-decoration: none;
+        footer a { color: #FA660F; text-decoration: none; }
+        footer a b { font-weight: 700; }
+        footer a:hover { text-decoration: underline; }
+
+        @media (max-width: 810px) {
+             .canvas-row { flex-direction: column; align-items: center; gap: 10px; }
+            canvas { width: 100% !important; max-width: 390px; height: auto !important; cursor: pointer; }
         }
-        footer a b {
-            font-weight: 700;
-        }
-        footer a:hover {
-            text-decoration: underline;
-        }
-        @media (max-width: 600px) {
-            .canvas-row {
-                flex-direction: column;
-                gap: 10px;
-            }
-            canvas {
-                width: 100%;
-                max-width: 100%;
-                cursor: pointer;
-            }
-            h2 {
-                font-size: 1.8em;
-            }
-            input {
-                max-width: 100%;
-            }
-        }
+         @media (max-width: 600px) {
+             h2 { font-size: 1.8em; }
+            input { max-width: 100%; }
+         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Strategy Logo Maker</h2>
         <input type="text" id="wordInput" value="Logo" oninput="generateLogos()">
+        <!-- Canvas Rows -->
         <div class="canvas-row">
             <canvas id="canvas1" width="1280" height="720"></canvas>
             <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas>
@@ -132,7 +115,7 @@
         </div>
     </div>
     <footer>
-        Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
+        Made by <a href="https://x.com/LaDoger21" target="_blank" rel="noopener noreferrer"><b>@LaDoger21</b></a> with 🧡
     </footer>
 
     <script>
@@ -145,216 +128,233 @@
             { id: 'canvas6', textColor: '#FFFFFF', bgColor: 'transparent', badge: 'whiteB.png' }
         ];
 
-        const badgeImages = {
-            'blackB.png': new Image(),
-            'orangeB.png': new Image(),
-            'whiteB.png': new Image()
-        };
-        badgeImages['blackB.png'].src = 'blackB.png';
-        badgeImages['orangeB.png'].src = 'orangeB.png';
-        badgeImages['whiteB.png'].src = 'whiteB.png';
+        const badgeImages = {};
+        let imagesLoaded = 0;
+        const totalImages = 3;
+        let initialDrawComplete = false;
+        let generateTimeout;
 
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        function imageLoaded() {
+            imagesLoaded++;
+            if (imagesLoaded === totalImages && !initialDrawComplete) {
+                console.log("All badge images loaded initially.");
+                requestAnimationFrame(generateLogos); // Use rAF for drawing
+                initialDrawComplete = true;
+            } else if (initialDrawComplete) {
+                 requestAnimationFrame(generateLogos); // Redraw using rAF
+            }
+        }
+
+        ['blackB.png', 'orangeB.png', 'whiteB.png'].forEach(src => {
+            if (!badgeImages[src]) {
+                const img = new Image();
+                img.onload = imageLoaded;
+                img.onerror = () => { console.error("Failed to load badge image:", src); imageLoaded(); };
+                img.src = src;
+                badgeImages[src] = img;
+            }
+        });
+
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         function generateLogos() {
-            const input = document.getElementById('wordInput').value;
-            const word = input ? input + "  " : ""; // Add two spaces for badge room
+            // Debounce using requestAnimationFrame is implicit via the imageLoaded callback
+            // but we still might want a timeout for rapid input changes
+            clearTimeout(generateTimeout);
+            generateTimeout = setTimeout(() => {
+                const inputText = document.getElementById('wordInput').value;
+                const textToRender = inputText || "";
 
-            canvases.forEach(canvasInfo => {
-                const canvas = document.getElementById(canvasInfo.id);
-                const ctx = canvas.getContext('2d');
-
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-                // Set background
-                if (canvasInfo.bgColor !== 'transparent') {
-                    ctx.fillStyle = canvasInfo.bgColor;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                } else {
-                    // Ensure transparency is clear if switching from colored bg
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                if (!initialDrawComplete && imagesLoaded < totalImages) {
+                    console.log("Waiting for images to load...");
+                    return;
                 }
 
+                canvases.forEach(canvasInfo => {
+                    const canvas = document.getElementById(canvasInfo.id);
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    const canvasWidth = canvas.width;
+                    const canvasHeight = canvas.height;
 
-                if (word) {
-                    const maxWidth = canvas.width * 0.9; // Max width constraint
-                    const maxHeight = canvas.height * 0.9; // Max height constraint
-                    let fontSize = 200; // Initial guess
+                    // Clear and Set Background
+                    ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+                    if (canvasInfo.bgColor !== 'transparent') {
+                        ctx.fillStyle = canvasInfo.bgColor;
+                        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                    }
 
-                    // --- Font Size Calculation ---
-                    ctx.font = `bold ${fontSize}px Lexend`;
-                    let metrics = ctx.measureText(word);
-                    let textWidth = metrics.width;
-                    // Approximate height based on font size (more accurate methods exist but this is often sufficient)
-                    let textHeight = fontSize;
+                    if (textToRender) {
+                        const badgeImg = badgeImages[canvasInfo.badge];
+                        let badgeWidth = 0, badgeHeight = 0, badgeGap = 0;
+                        const badgeAspectRatio = (badgeImg && badgeImg.naturalWidth) ? (badgeImg.naturalWidth / badgeImg.naturalHeight) : (534 / 889);
 
-                    // Decrease font size if too wide
-                    while (textWidth > maxWidth && fontSize > 20) {
-                        fontSize -= 10;
+                        // Font Size Calculation (Revised)
+                        const maxHeightConstraint = canvasHeight * 0.9;
+                        let fontSize = Math.min(maxHeightConstraint, 400); // Start large
+
+                        let finalMetrics, textWidth, totalVisualWidth, fontAscent, fontDescent;
+
+                        while (fontSize > 10) {
+                             ctx.font = `bold ${fontSize}px Lexend`;
+                             ctx.letterSpacing = `${fontSize * -0.1}px`;
+                             finalMetrics = ctx.measureText(textToRender);
+                             textWidth = finalMetrics.width;
+
+                             // Use actual bounding box if available, else estimate
+                             fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75;
+                             fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
+                             const textHeightApprox = fontAscent + fontDescent;
+
+                             badgeHeight = fontSize * 0.6;
+                             badgeWidth = badgeHeight * badgeAspectRatio;
+                             badgeGap = fontSize * 0.08;
+                             totalVisualWidth = textWidth + badgeGap + badgeWidth;
+
+                             const maxWidthConstraint = canvasWidth * 0.90;
+
+                             if (textHeightApprox <= maxHeightConstraint && totalVisualWidth <= maxWidthConstraint) {
+                                 break; // Fits
+                             }
+                             fontSize -= 5;
+                        }
+                        fontSize = Math.max(10, fontSize);
+
+                        // Recalculate final dimensions & metrics with chosen fontSize
                         ctx.font = `bold ${fontSize}px Lexend`;
-                        metrics = ctx.measureText(word);
-                        textWidth = metrics.width;
-                        textHeight = fontSize;
+                        ctx.letterSpacing = `${fontSize * -0.1}px`;
+                        finalMetrics = ctx.measureText(textToRender);
+                        textWidth = finalMetrics.width;
+                        fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75; // Final ascent
+                        fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25; // Final descent
+                        badgeHeight = fontSize * 0.6;
+                        badgeWidth = badgeHeight * badgeAspectRatio;
+                        badgeGap = fontSize * 0.08;
+                        totalVisualWidth = textWidth + badgeGap + badgeWidth;
+
+                         // Measure 'x' ascent for badge alignment
+                         const xMetrics = ctx.measureText('x');
+                         const xAscent = xMetrics.actualBoundingBoxAscent || fontSize * 0.5; // Approx x-height relative to baseline
+
+                        // Calculate Positioning
+                        const startX = (canvasWidth / 2) - (totalVisualWidth / 2); // Left edge of the whole unit
+
+                        // ** Calculate startY (baseline) for vertical centering **
+                        const startY = canvasHeight / 2 + (fontAscent - fontDescent) / 2;
+
+                        // Text Rendering
+                        ctx.fillStyle = canvasInfo.textColor;
+                        ctx.textAlign = 'left';
+                        ctx.textBaseline = 'alphabetic'; // ** Use alphabetic baseline **
+                        ctx.fillText(textToRender, startX, startY);
+
+                        // Badge Rendering
+                        if (badgeImg && badgeImg.complete && badgeImg.naturalHeight !== 0) {
+                            const badgeX = startX + textWidth + badgeGap;
+
+                            // ** Calculate badgeY for superscript effect **
+                            // Target: Center of badge aligns with top of 'x' (xAscent above baseline)
+                            // Top of 'x' is at startY - xAscent
+                            // Center of badge = badgeY + badgeHeight / 2
+                            // So: badgeY + badgeHeight / 2 = startY - xAscent
+                            const badgeY = startY - xAscent - (badgeHeight / 2);
+
+                            ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
+                        }
+                        // Reset context defaults that were changed
+                        ctx.letterSpacing = '0px';
+                        ctx.textAlign = 'start';
+                        ctx.textBaseline = 'alphabetic'; // Keep alphabetic or reset if needed elsewhere
                     }
+                });
 
-                    // Optional: Increase font size if too small (within limits)
-                    // Be careful with loops that increase size to avoid infinite loops
-                    while (textWidth < maxWidth * 0.8 && textHeight < maxHeight && fontSize < 500) {
-                         let nextFontSize = fontSize + 10;
-                         ctx.font = `bold ${nextFontSize}px Lexend`;
-                         let nextMetrics = ctx.measureText(word);
-                         if (nextMetrics.width > maxWidth || nextFontSize > maxHeight) {
-                             // If increasing makes it too big, break and use the current fontSize
-                             ctx.font = `bold ${fontSize}px Lexend`; // Reset to last valid font size
-                             break;
-                         }
-                         fontSize = nextFontSize;
-                         metrics = nextMetrics;
-                         textWidth = metrics.width;
-                         textHeight = fontSize; // Update height approx
-                    }
-
-                    // Final checks and apply final font size
-                    fontSize = Math.max(fontSize, 20); // Ensure minimum size
-                    if (textHeight > maxHeight) { // Check height constraint again
-                         fontSize = Math.floor(maxHeight);
-                    }
-                    ctx.font = `bold ${fontSize}px Lexend`;
-                    // --- End Font Size Calculation ---
-
-
-                    // --- Text Rendering ---
-                    ctx.fillStyle = canvasInfo.textColor;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-
-                    // *** THIS IS THE FIX: Use consistent letter spacing ***
-                    ctx.letterSpacing = `${fontSize * -0.1}px`; // Use -10% spacing always
-
-                    // Draw the text (word includes the two spaces)
-                    ctx.fillText(word, canvas.width / 2, canvas.height / 2);
-                    // --- End Text Rendering ---
-
-
-                    // --- Badge Rendering ---
-                    // Measure the *input* word without extra spaces for badge positioning
-                    const inputMetrics = ctx.measureText(input);
-                    const inputWidth = inputMetrics.width;
-
-                    // Calculate badge dimensions relative to font size
-                    const badgeHeight = fontSize * 0.6;
-                    const badgeAspectRatio = 534 / 889; // Width / Height of original badge
-                    const badgeWidth = badgeHeight * badgeAspectRatio;
-
-                    // Calculate badge position
-                    // Center of canvas + half the *input* word's width (adjusted by letter spacing)
-                    // Minus a small offset maybe related to the original intent of the two spaces or font metrics
-                    const badgeX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.1); // Adjust offset as needed
-
-                    // Get font ascent for vertical alignment
-                    // Re-measure 'X' with the final font settings to get vertical metrics
-                    const xMetrics = ctx.measureText('X'); // Use a capital letter for consistent height metrics
-                    const fontAscent = xMetrics.actualBoundingBoxAscent || fontSize * 0.75; // Estimate if not available
-
-                    // Center vertically - half font ascent - half badge height
-                    const badgeY = (canvas.height / 2) - (fontAscent / 2) - (badgeHeight / 2) + (fontSize * 0.08) ; // Fine-tune vertical alignment
-
-                    const badgeImg = badgeImages[canvasInfo.badge];
-                    // Ensure image is loaded before drawing
-                    if (badgeImg.complete && badgeImg.naturalHeight !== 0) {
-                         ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
-                    } else {
-                        // If image not loaded yet, trigger redraw when it is
-                        badgeImg.onload = () => {
-                            // Need to redraw *this specific canvas*
-                            // Simplified: just call generateLogos again. Could be optimized.
-                            if (!badgeImg.hasAttribute('data-onload-attached')) {
-                                badgeImg.setAttribute('data-onload-attached', 'true'); // Prevent multiple onload handlers
-                                generateLogos();
-                            }
-                        };
-                         badgeImg.onerror = () => {
-                             console.error("Failed to load badge image:", canvasInfo.badge);
-                         };
-                    }
-                    // --- End Badge Rendering ---
-                }
-            });
-
-            setupCanvasClickEvents(); // Setup clicks after drawing
+                setupCanvasClickEvents();
+            }, 16); // Debounce slightly more than one frame typically
         }
 
-        // Make sure initial call happens after images might have started loading
-        window.addEventListener('load', () => {
-            resizeCanvases(); // Contains initial generateLogos call
-        });
-
-        // Trigger redraw if font potentially loads later (basic example)
-        // A more robust solution uses the Font Loading API
-        document.fonts.ready.then(() => {
-             console.log('Fonts ready, redrawing logos.');
-             generateLogos();
-        });
 
         function setupCanvasClickEvents() {
+            // (Content remains the same as the previous working version)
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
-                canvas.onclick = null;
+                 if (!canvas) return;
+                canvas.onclick = null; // Remove previous listener
+                canvas.style.cursor = 'pointer'; // Always show pointer
 
-                if (isMobile) {
-                    canvas.onclick = () => {
-                        const dataUrl = canvas.toDataURL('image/png');
-                        const word = document.getElementById('wordInput').value || 'Logo';
-                        const filename = `${word}_${canvasInfo.id}.png`;
+                canvas.onclick = () => {
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const word = document.getElementById('wordInput').value || 'Logo';
+                    const filename = `${word.replace(/[^a-z0-9]/gi, '_')}_${canvasInfo.id}.png`;
 
-                        if (isIOS) {
-                            if (navigator.share) {
-                                fetch(dataUrl)
-                                    .then(res => res.blob())
-                                    .then(blob => {
-                                        const file = new File([blob], filename, { type: 'image/png' });
-                                        navigator.share({
-                                            files: [file],
-                                            title: filename
-                                        }).catch(() => {
-                                            window.location.href = dataUrl;
-                                        });
-                                    });
-                            } else {
-                                window.location.href = dataUrl;
-                            }
-                        } else {
-                            const link = document.createElement('a');
-                            link.download = filename;
-                            link.href = dataUrl;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
-                        }
-                    };
-                }
+                    if (isIOS && navigator.share) {
+                        fetch(dataUrl)
+                            .then(res => res.blob())
+                            .then(blob => {
+                                const file = new File([blob], filename, { type: 'image/png' });
+                                navigator.share({
+                                    files: [file],
+                                    title: filename
+                                }).catch((error) => {
+                                    console.log('Share API failed or cancelled:', error);
+                                    const link = document.createElement('a');
+                                    link.href = dataUrl;
+                                    link.download = filename;
+                                    link.target = '_blank';
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    document.body.removeChild(link);
+                                });
+                            });
+                    } else {
+                        const link = document.createElement('a');
+                        link.download = filename;
+                        link.href = dataUrl;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                    }
+                };
             });
         }
+
 
         function resizeCanvases() {
-            const container = document.querySelector('.container');
-            const width = Math.min(800, container.clientWidth);
-            const canvasWidth = (width > 600) ? 390 : width;
+             const container = document.querySelector('.container');
+             if (!container) return;
+             const containerWidth = container.clientWidth;
+             const gap = 10;
+             const isMobileLayout = window.innerWidth <= 810;
+             const desktopCanvasWidth = Math.min(390, (containerWidth - gap) / 2);
 
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
-                canvas.style.width = `${canvasWidth}px`;
-                canvas.style.height = `${(canvasWidth * 720) / 1280}px`;
+                 if (!canvas) return;
+                 let targetWidth = isMobileLayout ? Math.min(containerWidth, 390) : desktopCanvasWidth;
+                canvas.style.width = `${targetWidth}px`;
+                canvas.style.height = `${(targetWidth * 720) / 1280}px`;
             });
 
-            generateLogos();
+             if (imagesLoaded === totalImages || initialDrawComplete) {
+                requestAnimationFrame(generateLogos); // Use rAF for resize redraw
+             }
         }
 
+        // Initial setup & Event Listeners
         window.addEventListener('resize', resizeCanvases);
-        window.addEventListener('load', resizeCanvases);
+        window.addEventListener('load', () => {
+             console.log("Window loaded.");
+             resizeCanvases();
+             document.fonts.ready.then(() => {
+                console.log("Fonts ready.");
+                requestAnimationFrame(generateLogos); // Redraw when fonts are ready
+            });
+        });
+         if (document.readyState === 'complete' || (document.readyState !== 'loading' && !document.documentElement.doScroll)) {
+             resizeCanvases();
+         } else {
+            document.addEventListener('DOMContentLoaded', resizeCanvases);
+         }
 
-        generateLogos();
     </script>
 </body>
 </html>
