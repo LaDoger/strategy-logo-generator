@@ -69,9 +69,9 @@
             }
         });
 
-        // Check for iOS specifically
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        console.log("Is iOS:", isIOS); // Log check result
+        // Log isIOS status ONCE on load for easier checking without spamming console
+        console.log("Initial iOS Check:", isIOS);
 
         function generateLogos() {
             clearTimeout(generateTimeout);
@@ -95,27 +95,43 @@
                         ctx.fillRect(0, 0, canvasWidth, canvasHeight);
                     }
 
+                     // --- Temporary Visual iOS Check ---
+                     if (isIOS) {
+                         ctx.fillStyle = 'red';
+                         ctx.fillRect(0, 0, 5, 5); // Draw tiny red dot at top-left if iOS is detected
+                     }
+                     // ---------------------------------
+
                     if (textToRender) {
                         const badgeImg = badgeImages[canvasInfo.badge];
                         let badgeWidth = 0, badgeHeight = 0, badgeGap = 0;
                         const badgeAspectRatio = (badgeImg && badgeImg.naturalWidth) ? (badgeImg.naturalWidth / badgeImg.naturalHeight) : (534 / 889);
 
-                        // --- Determine Letter Spacing Multiplier ---
-                        // Apply more negative spacing on iOS to compensate for wider rendering
-                        const letterSpacingMultiplier = isIOS ? -0.2 : -0.1; // ADJUST -0.115 if needed
-
-                        // Font Size Calculation (Revised)
+                        // Font Size Calculation
                         const maxHeightConstraint = canvasHeight * 0.9;
                         let fontSize = Math.min(maxHeightConstraint, 400);
 
                         let finalMetrics, textWidth, totalVisualWidth, fontAscent, fontDescent;
+                        let spacingString = '-0px'; // Default value
 
                         while (fontSize > 10) {
                              ctx.font = `bold ${fontSize}px Lexend`;
-                             // Apply conditional letter spacing *during* measurement
-                             ctx.letterSpacing = `${fontSize * letterSpacingMultiplier}px`;
+
+                             // --- Explicit Spacing Calculation & Assignment ---
+                             const desktopSpacingValue = fontSize * -0.1;
+                             const iosSpacingValue = fontSize * -0.13; // INCREASED negative spacing for iOS test
+                             const spacingValueToUse = isIOS ? iosSpacingValue : desktopSpacingValue;
+                             spacingString = `${spacingValueToUse}px`; // The string to be applied
+
+                             // Apply spacing *before* measuring
+                             ctx.letterSpacing = spacingString;
+                             // --- End Explicit Spacing ---
+
+                             // *** Add Log INSIDE loop to see it change with font size ***
+                             console.log(`MEASURE LOOP (Canvas ${canvasInfo.id}): iOS=${isIOS}, Font=${fontSize}px, Spacing Str='${spacingString}'`);
+
                              finalMetrics = ctx.measureText(textToRender);
-                             textWidth = finalMetrics.width;
+                             textWidth = finalMetrics.width; // Width depends on spacing applied above
 
                              fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75;
                              fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
@@ -135,10 +151,23 @@
                         }
                         fontSize = Math.max(10, fontSize);
 
-                        // Recalculate final dimensions & metrics with chosen fontSize & spacing
+                        // Recalculate FINAL dimensions & metrics with chosen fontSize
                         ctx.font = `bold ${fontSize}px Lexend`;
-                        ctx.letterSpacing = `${fontSize * letterSpacingMultiplier}px`; // Set final spacing
-                        finalMetrics = ctx.measureText(textToRender);
+
+                        // --- Apply FINAL Explicit Spacing ---
+                        const finalDesktopSpacingValue = fontSize * -0.1;
+                        const finalIosSpacingValue = fontSize * -0.13; // Use same value as in loop
+                        const finalSpacingValueToUse = isIOS ? finalIosSpacingValue : finalDesktopSpacingValue;
+                        const finalSpacingString = `${finalSpacingValueToUse}px`;
+
+                        // Apply final spacing before drawing
+                        ctx.letterSpacing = finalSpacingString;
+                        // *** Add Log BEFORE drawing ***
+                        console.log(`-- FINAL DRAW (Canvas ${canvasInfo.id}): iOS=${isIOS}, Font=${fontSize}px, Spacing Str='${finalSpacingString}'`);
+                        // --- End Final Spacing ---
+
+
+                        finalMetrics = ctx.measureText(textToRender); // Measure one last time if needed for positioning
                         textWidth = finalMetrics.width;
                         fontAscent = finalMetrics.actualBoundingBoxAscent || fontSize * 0.75;
                         fontDescent = finalMetrics.actualBoundingBoxDescent || fontSize * 0.25;
@@ -152,7 +181,7 @@
 
                         // Calculate Positioning
                         const startX = (canvasWidth / 2) - (totalVisualWidth / 2);
-                        const startY = canvasHeight / 2 + (fontAscent - fontDescent) / 2; // Baseline Y
+                        const startY = canvasHeight / 2 + (fontAscent - fontDescent) / 2;
 
                         // Text Rendering
                         ctx.fillStyle = canvasInfo.textColor;
@@ -163,28 +192,26 @@
                         // Badge Rendering
                         if (badgeImg && badgeImg.complete && badgeImg.naturalHeight !== 0) {
                             const badgeX = startX + textWidth + badgeGap;
-                            const badgeY = startY - xAscent - (badgeHeight / 2); // Superscript align
+                            const badgeY = startY - xAscent - (badgeHeight / 2);
                             ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
                         }
 
-                        // Reset context defaults that were changed
+                        // Reset context defaults
                         ctx.letterSpacing = '0px';
                         ctx.textAlign = 'start';
-                        // ctx.textBaseline = 'alphabetic'; // Keep or reset as needed
                     }
                 });
                 setupCanvasClickEvents();
             }, 16);
         }
 
-        function setupCanvasClickEvents() {
-            // (Content remains the same)
+        function setupCanvasClickEvents() { /* ... unchanged ... */
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                  if (!canvas) return;
                 canvas.onclick = null;
                 canvas.style.cursor = 'pointer';
-                canvas.onclick = () => { /* ... download/share logic ... */
+                canvas.onclick = () => {
                     const dataUrl = canvas.toDataURL('image/png');
                     const word = document.getElementById('wordInput').value || 'Logo';
                     const filename = `${word.replace(/[^a-z0-9]/gi, '_')}_${canvasInfo.id}.png`;
@@ -200,10 +227,7 @@
                 };
             });
         }
-
-
-        function resizeCanvases() {
-            // (Content remains the same)
+        function resizeCanvases() { /* ... unchanged ... */
              const container = document.querySelector('.container'); if (!container) return;
              const containerWidth = container.clientWidth; const gap = 10; const isMobileLayout = window.innerWidth <= 810;
              const desktopCanvasWidth = Math.min(390, (containerWidth - gap) / 2);
