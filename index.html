@@ -20,434 +20,343 @@
     <meta name="twitter:description" content="Strategy Logo Maker made by @LaDoger21">
     <meta name="twitter:image" content="https://ladoger.art/logomaker/logomaker.jpg">
     <meta name="twitter:site" content="@LaDoger21">
+
     <style>
         body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            font-family: 'Lexend', sans-serif;
-            margin: 0;
-            padding: 20px 20px 0; /* Top padding is 20px */
-            min-height: 100vh;
-            box-sizing: border-box;
-            background-color: #FFFFFF;
+            display: flex; flex-direction: column; align-items: center;
+            font-family: 'Lexend', sans-serif; margin: 0; padding: 20px 20px 0;
+            min-height: 100vh; box-sizing: border-box; background-color: #FFFFFF;
         }
         .container {
-            width: 100%;
-            max-width: 800px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 10px; /* Reduced from 20px */
-            flex-grow: 1;
+            width: 100%; max-width: 800px; display: flex; flex-direction: column;
+            align-items: center; gap: 15px; flex-grow: 1;
         }
         h2 {
-            font-size: 2.5em;
-            font-weight: 700;
-            margin: 0;
-            color: #FA660F; /* Orange */
-            letter-spacing: -0.1em; /* Reduced spacing, matching logo logic */
-            padding-bottom: 10px; /* Ensures 20px total spacing to input */
+            font-size: 2.5em; font-weight: 700; margin: 0; color: #FA660F;
+            letter-spacing: -0.1em; padding-bottom: 5px;
         }
-        input {
-            width: 100%;
-            max-width: 300px;
-            padding: 10px;
-            font-size: 16px;
-            font-family: 'Lexend', sans-serif;
-            font-weight: 400; /* Not bold */
-            box-sizing: border-box;
-            border: 3px solid transparent; /* 3px border with gradient */
-            border-radius: 8px; /* Rounded corners */
-            background: linear-gradient(#FFFFFF, #FFFFFF) padding-box, /* White background */
+        input[type="text"] {
+            width: 100%; max-width: 300px; padding: 10px; font-size: 16px;
+            font-family: 'Lexend', sans-serif; font-weight: 400; box-sizing: border-box;
+            border: 3px solid transparent; border-radius: 8px;
+            background: linear-gradient(#FFFFFF, #FFFFFF) padding-box,
                         linear-gradient(to right, #FFB6C1, #FFDAB9, #FFDEAD, #E6E6FA, #B0E0E6, #98FB98, #D8BFD8) border-box;
-            animation: gradientShift 8s linear infinite;
-        }
-        @keyframes gradientShift {
-            0% {
-                background-position: 0% 0%;
-            }
-            100% {
-                background-position: 200% 0%; /* Continuous shift */
-            }
-        }
-        input {
-            background-size: 100% 100%, 200% 100%; /* First for white, second for gradient */
-        }
-        .canvas-row {
-            display: flex;
-            flex-wrap: nowrap;
-            gap: 10px; /* Reduced from 20px */
-            width: 100%;
-            max-width: 800px;
-        }
-        canvas {
-            /* Dynamic width set by JS, initial width helps layout */
-            width: 390px;
-            height: auto; /* Height determined by aspect ratio */
-            border: 1px solid #ccc;
-            /* Display aspect ratio will be set by JS */
-        }
-        .transparent-bg {
-            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%),
-                              linear-gradient(-45deg, #ccc 25%, transparent 25%),
-                              linear-gradient(45deg, transparent 75%, #ccc 75%),
-                              linear-gradient(-45deg, transparent 75%, #ccc 75%);
-            background-size: 20px 20px;
-            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-        }
-        footer {
-            width: 100%;
+            animation: gradientShift 8s linear infinite; background-size: 100% 100%, 200% 100%;
             text-align: center;
-            padding: 10px 0; /* Reduced from 20px */
-            background-color: #FFFFFF;
-            font-weight: 400; /* Not bold */
-            margin-top: 10px; /* Added margin top */
         }
-        footer a {
-            color: #FA660F; /* Orange */
-            text-decoration: none;
+        @keyframes gradientShift { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
+
+        .color-picker-container {
+            display: flex; justify-content: space-around; align-items: center;
+            width: 100%; max-width: 300px; margin-top: 5px; margin-bottom: 10px;
+            padding: 8px 15px; background-color: #f8f8f8; border: 1px solid #eee;
+            border-radius: 8px; box-sizing: border-box;
         }
-        footer a b {
-            font-weight: 700; /* Bold for @LaDoger21 */
+        input[type="color"] {
+            -webkit-appearance: none; -moz-appearance: none; appearance: none; /* Remove default styling */
+            width: 40px; height: 40px; padding: 0; border: none; border-radius: 6px;
+            cursor: pointer; background-color: transparent; border: 1px solid rgba(0, 0, 0, 0.1);
+            transition: transform 0.1s ease-in-out;
         }
-        footer a:hover {
-            text-decoration: underline;
+        input[type="color"]:hover { transform: scale(1.05); }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; border-radius: 6px; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
+        input[type="color"]::-moz-color-swatch { border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 6px; }
+
+        .canvas-row { display: flex; flex-wrap: nowrap; gap: 10px; width: 100%; max-width: 800px; }
+        canvas { width: 390px; height: auto; border: 1px solid #ccc; }
+        .transparent-bg {
+            background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%),
+                              linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
+        footer { width: 100%; text-align: center; padding: 10px 0; background-color: #FFFFFF; font-weight: 400; margin-top: 10px; }
+        footer a { color: #FA660F; text-decoration: none; }
+        footer a b { font-weight: 700; }
+        footer a:hover { text-decoration: underline; }
+
         @media (max-width: 600px) {
-            .canvas-row {
-                flex-direction: column;
-                gap: 10px; /* Reduced from 20px */
-            }
-            canvas {
-                width: 100% !important; /* Override JS width on mobile */
-                max-width: 100%;
-                cursor: pointer; /* Indicates clickable on mobile */
-                 /* Height still determined by JS aspect ratio */
-            }
-            h2 {
-                font-size: 1.8em;
-            }
-            input {
-                max-width: 100%;
-            }
+            .canvas-row { flex-direction: column; gap: 10px; }
+            canvas { width: 100% !important; max-width: 100%; cursor: pointer; }
+            h2 { font-size: 1.8em; }
+            input[type="text"], .color-picker-container { max-width: 100%; }
+            .color-picker-container { padding: 8px 10px; }
+            input[type="color"] { width: 35px; height: 35px; }
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Strategy Logo Maker</h2>
-        <input type="text" id="wordInput" value="More" oninput="generateLogos()">
 
-        <!-- Original 16:9 Canvases -->
-        <div class="canvas-row">
-            <canvas id="canvas1" width="1280" height="720"></canvas> <!-- black on orange -->
-            <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas> <!-- black on transparent -->
-        </div>
-        <div class="canvas-row">
-            <canvas id="canvas2" width="1280" height="720"></canvas> <!-- orange on white -->
-            <canvas id="canvas5" width="1280" height="720" class="transparent-bg"></canvas> <!-- orange on transparent -->
-        </div>
-        <div class="canvas-row">
-            <canvas id="canvas3" width="1280" height="720"></canvas> <!-- white on black -->
-            <canvas id="canvas6" width="1280" height="720" class="transparent-bg"></canvas> <!-- white on transparent -->
+        <input type="text" id="wordInput" value="More" placeholder="Enter text..." oninput="generateLogos()">
+
+        <div class="color-picker-container">
+            <input type="color" id="colorPicker1" value="#000000" title="Color 1" oninput="generateLogos()">
+            <input type="color" id="colorPicker2" value="#FFFFFF" title="Color 2" oninput="generateLogos()">
+            <input type="color" id="colorPicker3" value="#FA660F" title="Color 3" oninput="generateLogos()">
         </div>
 
-        <!-- New Square 1:1 Canvases -->
+        <!-- Canvas Rows -->
         <div class="canvas-row">
-            <canvas id="canvas7" width="1280" height="1280"></canvas> <!-- black on orange (square) -->
-            <canvas id="canvas10" width="1280" height="1280" class="transparent-bg"></canvas> <!-- black on transparent (square) -->
+            <canvas id="canvas1" width="1280" height="720"></canvas>
+            <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas>
         </div>
         <div class="canvas-row">
-            <canvas id="canvas8" width="1280" height="1280"></canvas> <!-- orange on white (square) -->
-            <canvas id="canvas11" width="1280" height="1280" class="transparent-bg"></canvas> <!-- orange on transparent (square) -->
+            <canvas id="canvas2" width="1280" height="720"></canvas>
+            <canvas id="canvas5" width="1280" height="720" class="transparent-bg"></canvas>
         </div>
         <div class="canvas-row">
-            <canvas id="canvas9" width="1280" height="1280"></canvas> <!-- white on black (square) -->
-            <canvas id="canvas12" width="1280" height="1280" class="transparent-bg"></canvas> <!-- white on transparent (square) -->
+            <canvas id="canvas3" width="1280" height="720"></canvas>
+            <canvas id="canvas6" width="1280" height="720" class="transparent-bg"></canvas>
         </div>
-
+        <div class="canvas-row">
+            <canvas id="canvas7" width="1280" height="1280"></canvas>
+            <canvas id="canvas10" width="1280" height="1280" class="transparent-bg"></canvas>
+        </div>
+        <div class="canvas-row">
+            <canvas id="canvas8" width="1280" height="1280"></canvas>
+            <canvas id="canvas11" width="1280" height="1280" class="transparent-bg"></canvas>
+        </div>
+        <div class="canvas-row">
+            <canvas id="canvas9" width="1280" height="1280"></canvas>
+            <canvas id="canvas12" width="1280" height="1280" class="transparent-bg"></canvas>
+        </div>
     </div>
     <footer>
         Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
     </footer>
 
     <script>
+        const COLOR_ROLE_1 = 'color1';
+        const COLOR_ROLE_2 = 'color2';
+        const COLOR_ROLE_3 = 'color3';
+
         const canvases = [
-            // Original 16:9
-            { id: 'canvas1', textColor: '#000000', bgColor: '#FA660F', badge: 'blackB.png' },  // black on orange
-            { id: 'canvas2', textColor: '#FA660F', bgColor: '#FFFFFF', badge: 'orangeB.png' },  // orange on white
-            { id: 'canvas3', textColor: '#FFFFFF', bgColor: '#000000', badge: 'whiteB.png' },  // white on black
-            { id: 'canvas4', textColor: '#000000', bgColor: 'transparent', badge: 'blackB.png' },  // black on transparent
-            { id: 'canvas5', textColor: '#FA660F', bgColor: 'transparent', badge: 'orangeB.png' },  // orange on transparent
-            { id: 'canvas6', textColor: '#FFFFFF', bgColor: 'transparent', badge: 'whiteB.png' },   // white on transparent
-            // New 1:1 Square
-            { id: 'canvas7', textColor: '#000000', bgColor: '#FA660F', badge: 'blackB.png' },  // black on orange (square)
-            { id: 'canvas8', textColor: '#FA660F', bgColor: '#FFFFFF', badge: 'orangeB.png' },  // orange on white (square)
-            { id: 'canvas9', textColor: '#FFFFFF', bgColor: '#000000', badge: 'whiteB.png' },  // white on black (square)
-            { id: 'canvas10', textColor: '#000000', bgColor: 'transparent', badge: 'blackB.png' }, // black on transparent (square)
-            { id: 'canvas11', textColor: '#FA660F', bgColor: 'transparent', badge: 'orangeB.png' }, // orange on transparent (square)
-            { id: 'canvas12', textColor: '#FFFFFF', bgColor: 'transparent', badge: 'whiteB.png' }  // white on transparent (square)
+            // Role pairs define text/background combinations
+            { id: 'canvas1', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_3 }, { id: 'canvas4', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },
+            { id: 'canvas2', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_2 }, { id: 'canvas5', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' },
+            { id: 'canvas3', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_1 }, { id: 'canvas6', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' },
+            // Square versions
+            { id: 'canvas7', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_3 }, { id: 'canvas10', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },
+            { id: 'canvas8', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_2 }, { id: 'canvas11', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' },
+            { id: 'canvas9', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_1 }, { id: 'canvas12', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' }
         ];
 
-        // Preload images
-        const badgeImages = {
-            'blackB.png': new Image(),
-            'orangeB.png': new Image(),
-            'whiteB.png': new Image()
+        // Load the single symbol image
+        const symbolImg = new Image();
+        symbolImg.src = 'symbol.png'; // Updated filename
+        let symbolLoaded = false;
+        symbolImg.onload = () => {
+            symbolLoaded = true;
+            if (window.initialDrawTriggered) { // If initial draw was waiting for the image
+                generateLogos();
+            }
         };
-        badgeImages['blackB.png'].src = 'blackB.png';
-        badgeImages['orangeB.png'].src = 'orangeB.png';
-        badgeImages['whiteB.png'].src = 'whiteB.png';
+         symbolImg.onerror = () => console.error("Failed to load symbol image: symbol.png");
 
-        // Detect if device is mobile
+        // Reusable offscreen canvas for symbol colorization
+        const offscreenCanvas = document.createElement('canvas');
+        const offscreenCtx = offscreenCanvas.getContext('2d');
+
         const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-        // Detect iOS specifically
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+        function getSelectedColors() {
+            return {
+                [COLOR_ROLE_1]: document.getElementById('colorPicker1').value,
+                [COLOR_ROLE_2]: document.getElementById('colorPicker2').value,
+                [COLOR_ROLE_3]: document.getElementById('colorPicker3').value
+            };
+        }
+
+        function drawColorizedSymbol(mainCtx, targetColor, symbolX, symbolY, symbolWidth, symbolHeight) {
+            if (!symbolLoaded || symbolWidth <= 0 || symbolHeight <= 0) return;
+            try {
+                offscreenCanvas.width = symbolWidth;
+                offscreenCanvas.height = symbolHeight;
+                offscreenCtx.clearRect(0, 0, symbolWidth, symbolHeight);
+                offscreenCtx.drawImage(symbolImg, 0, 0, symbolWidth, symbolHeight); // Draw symbol
+                offscreenCtx.globalCompositeOperation = 'source-in'; // Keep only symbol pixels
+                offscreenCtx.fillStyle = targetColor;
+                offscreenCtx.fillRect(0, 0, symbolWidth, symbolHeight); // Fill with target color
+                offscreenCtx.globalCompositeOperation = 'source-over'; // Reset
+                mainCtx.drawImage(offscreenCanvas, symbolX, symbolY, symbolWidth, symbolHeight); // Draw to main canvas
+            } catch (e) {
+                console.error("Error drawing colorized symbol:", e);
+            }
+        }
+
         function generateLogos() {
-            const input = document.getElementById('wordInput').value;
-            const word = input ? input + "  " : ""; // Add two spaces only if there's input
+            if (!symbolLoaded && !symbolImg.complete) {
+                console.log("Symbol not loaded yet, deferring generateLogos.");
+                // Ensure initial draw triggers this again once loaded
+                window.initialDrawTriggered = true;
+                return;
+            }
 
-            canvases.forEach(canvasInfo => {
-                const canvas = document.getElementById(canvasInfo.id);
-                if (!canvas) {
-                    console.error(`Canvas with id ${canvasInfo.id} not found.`);
-                    return; // Skip if canvas doesn't exist
-                }
-                const ctx = canvas.getContext('2d');
+            requestAnimationFrame(() => {
+                const input = document.getElementById('wordInput').value;
+                const word = input ? input + "  " : ""; // Add spacing for symbol
+                const selectedColors = getSelectedColors();
 
-                // Clear canvas (transparent by default)
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                canvases.forEach(canvasInfo => {
+                    const canvas = document.getElementById(canvasInfo.id);
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    const textColor = selectedColors[canvasInfo.textColorRole];
+                    const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
 
-                // Set background only for non-transparent canvases
-                if (canvasInfo.bgColor !== 'transparent') {
-                    ctx.fillStyle = canvasInfo.bgColor;
-                    ctx.fillRect(0, 0, canvas.width, canvas.height);
-                }
+                    // Clear and set background
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    if (bgColor !== 'transparent') {
+                        ctx.fillStyle = bgColor;
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    }
 
-                if (word) {
-                    // --- Dynamic Font Size Calculation ---
-                    const maxWidth = canvas.width * 0.9;
-                    const maxHeight = canvas.height * 0.9;
-                    let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5);
-                    ctx.font = `bold ${fontSize}px Lexend`;
-                    ctx.letterSpacing = `${fontSize * -0.1}px`;
-
-                    let metrics = ctx.measureText(word);
-                    let textWidth = metrics.width;
-                    let textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                    textHeight = textHeight || fontSize; // Fallback
-
-                    let iterations = 0;
-                    const maxIterations = 100;
-
-                    while (((textWidth > maxWidth) || (textHeight > maxHeight)) && fontSize > 10 && iterations < maxIterations) {
-                        let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                        fontSize *= scaleFactor * 0.98; // Reduce size proportionally, slight safety margin
-                        fontSize = Math.max(fontSize, 10);
+                    if (word) {
+                        // --- Font Size Calculation ---
+                        const maxWidth = canvas.width * 0.9;
+                        const maxHeight = canvas.height * 0.9;
+                        let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5); // Initial guess
                         ctx.font = `bold ${fontSize}px Lexend`;
                         ctx.letterSpacing = `${fontSize * -0.1}px`;
-                        metrics = ctx.measureText(word);
-                        textWidth = metrics.width;
-                        textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                        textHeight = textHeight || fontSize;
-                        iterations++;
-                    }
+                        let metrics = ctx.measureText(word);
+                        let textWidth = metrics.width;
+                        let textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent || fontSize;
+                        let iterations = 0; const maxIterations = 50;
 
-                    iterations = 0;
-                    while (textWidth < maxWidth * 0.8 && textHeight < maxHeight * 0.8 && fontSize < Math.min(canvas.width, canvas.height) && iterations < maxIterations) {
-                         let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                         if (scaleFactor <= 1.02) break;
-                         fontSize *= Math.min(scaleFactor, 1.05); // Less aggressive increase
-                         fontSize = Math.min(fontSize, Math.min(canvas.width, canvas.height)); // Absolute cap
-                         ctx.font = `bold ${fontSize}px Lexend`;
-                         ctx.letterSpacing = `${fontSize * -0.1}px`;
-                         metrics = ctx.measureText(word);
-                         textWidth = metrics.width;
-                         textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
-                         textHeight = textHeight || fontSize;
-                         iterations++;
-                    }
-
-                    if (textWidth > maxWidth || textHeight > maxHeight) {
-                         fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                         fontSize = Math.max(fontSize, 10);
-                         ctx.font = `bold ${fontSize}px Lexend`;
-                         ctx.letterSpacing = `${fontSize * -0.1}px`;
-                         metrics = ctx.measureText(word); // Re-measure after final adjustment
-                         textWidth = metrics.width;
-                    }
-                    // --- End Font Size Calculation ---
-
-                    // Set text properties
-                    ctx.fillStyle = canvasInfo.textColor;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle'; // Crucial for vertical centering
-
-                    // Draw text in center
-                    const textY = canvas.height / 2; // Baseline for middle alignment
-                    ctx.fillText(word, canvas.width/2, textY);
-
-                    // --- Badge Drawing ---
-                    const badgeHeight = fontSize * 0.6; // Badge height relative to font size
-                    const badgeAspectRatio = 534 / 889; // Aspect ratio of badge image (width/height)
-                    const badgeWidth = badgeHeight * badgeAspectRatio;
-
-                    // Measure the input text *without* trailing spaces to find its end point
-                    const inputMetrics = ctx.measureText(input); // Use 'input', not 'word'
-                    const inputWidth = inputMetrics.width;
-
-                    // Calculate X position:
-                    // Start at canvas center, move to the right edge of the *centered input text*, then shift slightly left.
-                    const badgeX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.12);
-
-                    // *** REFINED Y POSITION CALCULATION ***
-                    // textY is the vertical center baseline.
-                    // badgeHeight is the calculated height of the badge.
-                    // We want to position the badge so it aligns nicely below the text center.
-                    // Let's aim to place the *bottom* of the badge a small distance *below* textY.
-                    // A shift factor relative to fontSize determines this distance.
-                    const downwardShiftFactor = 0.08; // Adjusted slightly to push it down a bit more
-                    const badgeBottomY = textY + (fontSize * downwardShiftFactor);
-
-                    // Calculate the top Y coordinate needed for drawImage
-                    const badgeY = badgeBottomY - badgeHeight;
-
-                    // Draw badge image
-                    const badgeImg = badgeImages[canvasInfo.badge];
-                    if (badgeImg.complete && badgeImg.naturalWidth > 0) { // Check if image loaded
-                        try {
-                            ctx.drawImage(badgeImg, badgeX, badgeY, badgeWidth, badgeHeight);
-                        } catch (e) {
-                            console.error("Error drawing badge image:", e);
+                        // Adjust size iteratively
+                        while (((textWidth > maxWidth) || (textHeight > maxHeight)) && fontSize > 10 && iterations < maxIterations) { // Scale down
+                            let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                            fontSize *= scaleFactor * 0.97; // Slightly more aggressive scale down
+                            fontSize = Math.max(fontSize, 10);
+                            ctx.font = `bold ${fontSize}px Lexend`; ctx.letterSpacing = `${fontSize * -0.1}px`;
+                            metrics = ctx.measureText(word); textWidth = metrics.width; textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent || fontSize;
+                            iterations++;
                         }
-                    } else if (!badgeImg.complete) {
-                        badgeImg.onload = () => {
-                            if (document.getElementById(canvasInfo.id)) {
-                                generateLogos(); // Redraw necessary canvases on load
-                            }
-                        }
+                        iterations = 0;
+                        while (textWidth < maxWidth * 0.8 && textHeight < maxHeight * 0.8 && fontSize < Math.min(canvas.width, canvas.height) && iterations < maxIterations) { // Scale up
+                             let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight); if (scaleFactor <= 1.01) break;
+                             fontSize *= Math.min(scaleFactor, 1.02); // Slightly less aggressive scale up
+                             fontSize = Math.min(fontSize, Math.min(canvas.width, canvas.height));
+                             ctx.font = `bold ${fontSize}px Lexend`; ctx.letterSpacing = `${fontSize * -0.1}px`;
+                             metrics = ctx.measureText(word); textWidth = metrics.width; textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent || fontSize;
+                             iterations++;
+                         }
+                         if (textWidth > maxWidth || textHeight > maxHeight) { // Final check
+                             fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight); fontSize = Math.max(fontSize, 10);
+                             ctx.font = `bold ${fontSize}px Lexend`; ctx.letterSpacing = `${fontSize * -0.1}px`; metrics = ctx.measureText(word); textWidth = metrics.width;
+                         }
+                        // --- End Font Size Calculation ---
+
+                        // Draw Text
+                        ctx.fillStyle = textColor;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        const textY = canvas.height / 2;
+                        ctx.fillText(word, canvas.width / 2, textY);
+
+                        // Draw Symbol
+                        const symbolHeight = fontSize * 0.6;
+                        const symbolAspectRatio = 534 / 889; // Aspect ratio of symbol.png
+                        const symbolWidth = symbolHeight * symbolAspectRatio;
+                        const inputMetrics = ctx.measureText(input); // Measure text *without* spaces
+                        const inputWidth = inputMetrics.width;
+                        const symbolX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.12); // Position relative to text end
+                        const downwardShiftFactor = 0.08;
+                        const symbolBottomY = textY + (fontSize * downwardShiftFactor);
+                        const symbolY = symbolBottomY - symbolHeight;
+
+                        drawColorizedSymbol(ctx, textColor, symbolX, symbolY, symbolWidth, symbolHeight);
                     }
-                    // --- End Badge Drawing ---
-                }
+                });
             });
-
-            // Add click events after logos are generated
-            setupCanvasClickEvents();
         }
 
         function setupCanvasClickEvents() {
-            canvases.forEach(canvasInfo => {
+             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
-                if (!canvas) return; // Skip if canvas doesn't exist
+                if (!canvas) return;
+                canvas.onclick = null; // Clear previous handler
 
-                // Remove existing click event to avoid duplicates
-                canvas.onclick = null;
-
-                // Only add click handlers on mobile
                 if (isMobile) {
                     canvas.onclick = () => {
                         const dataUrl = canvas.toDataURL('image/png');
                         const word = document.getElementById('wordInput').value || 'Logo';
                         const aspectRatio = canvas.width === canvas.height ? 'square' : '16x9';
-                        const filename = `${word}_${canvasInfo.textColor}_on_${canvasInfo.bgColor === 'transparent' ? 'transparent' : canvasInfo.bgColor}_${aspectRatio}.png`.replace('#',''); // Clean filename
+                        const selectedColors = getSelectedColors();
+                        const textColor = selectedColors[canvasInfo.textColorRole];
+                        const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
+                        const filename = `${word}_${textColor}_on_${bgColor}_${aspectRatio}.png`.replace(/#/g,''); // Remove '#' for cleaner filename
 
+                        // iOS Share / Save Fallback
                         if (isIOS && navigator.share) {
                            try {
-                                fetch(dataUrl)
-                                    .then(res => res.blob())
-                                    .then(blob => {
-                                        if (!blob) throw new Error("Failed to create blob");
-                                        const file = new File([blob], filename, { type: 'image/png' });
-                                        navigator.share({
-                                            files: [file],
-                                            title: filename
-                                        }).catch((error) => {
-                                            console.error('Share API failed:', error);
-                                            window.open(dataUrl, '_blank');
-                                        });
-                                    }).catch(error => {
-                                        console.error('Fetch/Blob failed:', error);
-                                         window.open(dataUrl, '_blank'); // Fallback
-                                    });
-                           } catch (error) {
-                                console.error('Error preparing share data:', error);
-                                window.open(dataUrl, '_blank'); // Fallback
-                           }
-                        } else if (isIOS) {
-                             window.open(dataUrl, '_blank');
-                        }
-                        else {
-                            const link = document.createElement('a');
-                            link.download = filename;
-                            link.href = dataUrl;
-                            document.body.appendChild(link);
-                            link.click();
-                            document.body.removeChild(link);
+                                fetch(dataUrl).then(res => res.blob()).then(blob => {
+                                    if (!blob) throw new Error("Blob creation failed");
+                                    navigator.share({ files: [new File([blob], filename, { type: 'image/png' })], title: filename })
+                                     .catch(() => window.open(dataUrl, '_blank').document.write(`<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`)); // Fallback on share error
+                                }).catch(() => window.open(dataUrl, '_blank').document.write(`<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`)); // Fallback on fetch/blob error
+                           } catch (error) { window.open(dataUrl, '_blank').document.write(`<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`); } // Fallback on general error
+                        } else if (isIOS) { // iOS without Share API
+                            const imageWindow = window.open(dataUrl, '_blank'); // Open directly
+                            // Attempt to add instructions, might not work reliably in all iOS scenarios
+                            setTimeout(() => { if(imageWindow) imageWindow.document.body.innerHTML = `<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`; }, 500);
+                        } else { // Standard Download
+                            const link = document.createElement('a'); link.download = filename; link.href = dataUrl;
+                            document.body.appendChild(link); link.click(); document.body.removeChild(link);
                         }
                     };
                 }
-                // No click handler on desktop
             });
         }
 
         function resizeCanvases() {
             const container = document.querySelector('.container');
-            const totalWidth = Math.min(800, container.clientWidth);
-            const gap = 10; // Match CSS gap
-            const isSmallScreen = totalWidth <= 600;
+            const totalWidth = Math.min(800, container.clientWidth); // Use container width up to max 800px
+            const gap = 10;
+            const isSmallScreen = window.innerWidth <= 600; // Use window width for media query breakpoint check
 
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                 if (!canvas) return;
-
-                const displayWidth = isSmallScreen
-                    ? totalWidth
-                    : (totalWidth - gap) / 2;
-
-                const nativeWidth = canvas.width;
-                const nativeHeight = canvas.height;
-                const displayHeight = (displayWidth * nativeHeight) / nativeWidth;
-
+                const displayWidth = isSmallScreen ? (container.clientWidth) : (totalWidth - gap) / 2; // Use container width on small screens
+                const nativeRatio = canvas.height / canvas.width;
+                const displayHeight = displayWidth * nativeRatio;
                 canvas.style.width = `${displayWidth}px`;
                 canvas.style.height = `${displayHeight}px`;
             });
-
-            generateLogos();
+            generateLogos(); // Redraw after resizing
         }
 
-        window.addEventListener('resize', resizeCanvases);
+        // Initial Setup on Load
+        window.initialDrawTriggered = false;
         window.addEventListener('load', () => {
-             let loadedCount = 0;
-             const totalImages = Object.keys(badgeImages).length;
-             const tryInitialDraw = () => {
-                loadedCount++;
-                if (loadedCount >= totalImages) {
-                    resizeCanvases();
-                }
-             }
-             Object.values(badgeImages).forEach(img => {
-                if (img.complete && img.naturalWidth > 0) {
-                    loadedCount++;
-                } else {
-                    img.onload = tryInitialDraw;
-                    img.onerror = () => {
-                         console.error(`Failed to load badge: ${img.src}`);
-                         tryInitialDraw();
-                    }
-                }
-             });
-             if (loadedCount >= totalImages) {
-                 resizeCanvases();
-             }
+            // Check if symbol was cached and loaded instantly
+            if (symbolImg.complete && symbolImg.naturalWidth > 0) {
+                symbolLoaded = true;
+            }
+
+            window.initialDrawTriggered = true; // Mark that we want the initial draw
+            resizeCanvases(); // Perform initial resize (will call generateLogos, which checks symbolLoaded)
+            setupCanvasClickEvents(); // Setup click handlers once
+
+            // Add resize listener
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeCanvases, 100); // Debounce resize events
+            });
+
+            // Fallback timeout for symbol loading (less critical now generateLogos checks)
              setTimeout(() => {
-                if(loadedCount < totalImages) {
-                    console.warn("Timeout waiting for images, attempting draw anyway.");
-                    resizeCanvases();
+                if(!symbolLoaded) {
+                    console.warn("Timeout waiting for symbol. Logos might render without it.");
+                    symbolLoaded = true; // Allow drawing attempts anyway
+                    if(window.initialDrawTriggered) generateLogos(); // Try drawing if needed
                 }
-             }, 5000);
+             }, 3000);
         });
 
     </script>
