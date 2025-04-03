@@ -27,7 +27,7 @@
             --input-border-width: 3px;
             --input-padding: 10px;
             --border-radius: 8px;
-            --standard-gap: 8px; /* Renamed for clarity */
+            --standard-gap: 8px;
         }
         body {
             display: flex; flex-direction: column; align-items: center;
@@ -86,8 +86,27 @@
         @media (max-width: 600px) {
             h2 { font-size: 1.8em; }
             .text-input-wrapper, .color-picker-container { max-width: 100%; }
-            .canvas-row { flex-direction: column; gap: var(--standard-gap); }
+            .canvas-row {
+                 flex-direction: column;
+                 gap: var(--standard-gap);
+            }
             canvas { width: 100% !important; max-width: 100%; cursor: pointer; }
+
+            /* --- Mobile Canvas Visual Order using CSS 'order' --- */
+            /* Solid Backgrounds First */
+            #canvas1 { order: 1; }  /* Black/Orange 16:9 */
+            #canvas2 { order: 2; }  /* Orange/White 16:9 */
+            #canvas3 { order: 3; }  /* White/Black 16:9 */
+            #canvas7 { order: 4; }  /* Black/Orange Square */
+            #canvas8 { order: 5; }  /* Orange/White Square */
+            #canvas9 { order: 6; }  /* White/Black Square */
+            /* Transparent Backgrounds Last */
+            #canvas4 { order: 7; }  /* Black/Transparent 16:9 */
+            #canvas5 { order: 8; }  /* Orange/Transparent 16:9 */
+            #canvas6 { order: 9; }  /* White/Transparent 16:9 */
+            #canvas10 { order: 10; } /* Black/Transparent Square */
+            #canvas11 { order: 11; } /* Orange/Transparent Square */
+            #canvas12 { order: 12; } /* White/Transparent Square */
         }
     </style>
 </head>
@@ -100,7 +119,6 @@
         </div>
 
         <div class="color-picker-container">
-            <!-- Default order: Black, Orange, White -->
             <label class="color-picker-label animated-border" id="labelPicker1">
                 <input type="color" id="colorPicker1" value="#000000" title="Color 1 (Default Black)" oninput="handleColorInput(this)">
             </label>
@@ -112,7 +130,8 @@
             </label>
         </div>
 
-        <!-- Canvas Rows - Structure remains same -->
+        <!-- Canvas Rows - HTML order remains unchanged -->
+        <!-- data-row-id removed as it's no longer needed by JS -->
         <div class="canvas-row"> <canvas id="canvas1" width="1280" height="720"></canvas> <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas> </div>
         <div class="canvas-row"> <canvas id="canvas2" width="1280" height="720"></canvas> <canvas id="canvas5" width="1280" height="720" class="transparent-bg"></canvas> </div>
         <div class="canvas-row"> <canvas id="canvas3" width="1280" height="720"></canvas> <canvas id="canvas6" width="1280" height="720" class="transparent-bg"></canvas> </div>
@@ -123,29 +142,17 @@
     <footer> Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡 </footer>
 
     <script>
-        // Color Roles now conceptually match the default picker order:
-        const COLOR_ROLE_1 = 'color1'; // Default Black (Picker 1)
-        const COLOR_ROLE_2 = 'color2'; // Default Orange (Picker 2)
-        const COLOR_ROLE_3 = 'color3'; // Default White (Picker 3)
+        const COLOR_ROLE_1 = 'color1'; // Default Black
+        const COLOR_ROLE_2 = 'color2'; // Default Orange
+        const COLOR_ROLE_3 = 'color3'; // Default White
 
-        // ** UPDATED Canvas Definitions **
-        // Uses roles based on the new default picker meanings
-        const canvases = [
-            // Desired Order: Black-on-Orange, Orange-on-White, White-on-Black
-            { id: 'canvas1', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2 }, // Txt=R1(Black), BG=R2(Orange)
-            { id: 'canvas2', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3 }, // Txt=R2(Orange), BG=R3(White)
-            { id: 'canvas3', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1 }, // Txt=R3(White), BG=R1(Black)
-            // Transparent versions follow text color order: Black, Orange, White
-            { id: 'canvas4', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' }, // Txt=R1(Black)
-            { id: 'canvas5', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' }, // Txt=R2(Orange)
-            { id: 'canvas6', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' }, // Txt=R3(White)
-            // Square versions mirror the above logic
-            { id: 'canvas7', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2 }, // Txt=R1(Black), BG=R2(Orange)
-            { id: 'canvas8', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3 }, // Txt=R2(Orange), BG=R3(White)
-            { id: 'canvas9', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1 }, // Txt=R3(White), BG=R1(Black)
-            { id: 'canvas10', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },// Txt=R1(Black)
-            { id: 'canvas11', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' },// Txt=R2(Orange)
-            { id: 'canvas12', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' } // Txt=R3(White)
+        const canvases = [ /* Canvas definitions remain the same, correctly ordered */
+            { id: 'canvas1', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2 }, { id: 'canvas4', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },
+            { id: 'canvas2', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3 }, { id: 'canvas5', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' },
+            { id: 'canvas3', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1 }, { id: 'canvas6', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' },
+            { id: 'canvas7', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_2 }, { id: 'canvas10', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },
+            { id: 'canvas8', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_3 }, { id: 'canvas11', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' },
+            { id: 'canvas9', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_1 }, { id: 'canvas12', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' }
         ];
 
         const symbolImg = new Image();
@@ -158,17 +165,17 @@
         const offscreenCtx = offscreenCanvas.getContext('2d');
         const isMobile = () => window.innerWidth <= 600;
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-        const mainContainer = document.getElementById('mainContainer'); // Cache container
+        const mainContainer = document.getElementById('mainContainer');
 
         // --- Helper Functions (Unchanged) ---
-        function getSelectedColors() {
+        function getSelectedColors() { /* ... */
             return {
                 [COLOR_ROLE_1]: document.getElementById('colorPicker1').value,
                 [COLOR_ROLE_2]: document.getElementById('colorPicker2').value,
                 [COLOR_ROLE_3]: document.getElementById('colorPicker3').value
             };
          }
-        function drawColorizedSymbol(mainCtx, targetColor, symbolX, symbolY, symbolWidth, symbolHeight) {
+        function drawColorizedSymbol(mainCtx, targetColor, symbolX, symbolY, symbolWidth, symbolHeight) { /* ... */
              if (!symbolLoaded || symbolWidth <= 0 || symbolHeight <= 0) return;
              try {
                  offscreenCanvas.width = symbolWidth; offscreenCanvas.height = symbolHeight;
@@ -181,19 +188,19 @@
                  mainCtx.drawImage(offscreenCanvas, symbolX, symbolY, symbolWidth, symbolHeight);
              } catch (e) { console.error("Error drawing symbol:", e); }
         }
-        function updatePickerBackgrounds() {
+        function updatePickerBackgrounds() { /* ... */
             const colors = getSelectedColors();
             document.getElementById('labelPicker1').style.setProperty('--bg-color', colors[COLOR_ROLE_1]);
             document.getElementById('labelPicker2').style.setProperty('--bg-color', colors[COLOR_ROLE_2]);
             document.getElementById('labelPicker3').style.setProperty('--bg-color', colors[COLOR_ROLE_3]);
          }
-        function handleColorInput(inputElement) {
+        function handleColorInput(inputElement) { /* ... */
             updatePickerBackgrounds();
             generateLogos();
          }
 
-        // --- Logo Generation (Unchanged logic, uses updated canvas definitions) ---
-        function generateLogos() {
+        // --- Logo Generation (Unchanged logic) ---
+        function generateLogos() { /* ... */
             if (!symbolLoaded && !symbolImg.complete) { window.initialDrawTriggered = true; return; }
             requestAnimationFrame(() => {
                 const input = document.getElementById('wordInput').value; const word = input ? input + "  " : "";
@@ -201,8 +208,7 @@
                 canvases.forEach(canvasInfo => {
                     const canvas = document.getElementById(canvasInfo.id); if (!canvas) return;
                     const ctx = canvas.getContext('2d');
-                    const textColor = selectedColors[canvasInfo.textColorRole]; // Uses updated role assignments
-                    const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole]; // Uses updated role assignments
+                    const textColor = selectedColors[canvasInfo.textColorRole]; const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     if (bgColor !== 'transparent') { ctx.fillStyle = bgColor; ctx.fillRect(0, 0, canvas.width, canvas.height); }
                     if (word) {
@@ -225,51 +231,65 @@
         }
 
         // --- Canvas Click Events (Unchanged) ---
-        function setupCanvasClickEvents() {
+        function setupCanvasClickEvents() { /* ... */
              canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
-                if (!canvas || !isMobile()) return;
-                canvas.onclick = () => {
-                    const dataUrl = canvas.toDataURL('image/png'); const word = document.getElementById('wordInput').value || 'Logo';
-                    const aspectRatio = canvas.width === canvas.height ? 'square' : '16x9'; const selectedColors = getSelectedColors();
-                    const textColor = selectedColors[canvasInfo.textColorRole]; const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
-                    const filename = `${word}_${textColor}_on_${bgColor}_${aspectRatio}.png`.replace(/#/g,'');
-                    if (isIOS && navigator.share) { fetch(dataUrl).then(res => res.blob()).then(blob => { if (!blob) throw new Error("Blob failed"); navigator.share({ files: [new File([blob], filename, { type: 'image/png' })], title: filename }).catch(() => window.open(dataUrl, '_blank')); }).catch(() => window.open(dataUrl, '_blank')); }
-                    else if (isIOS) { window.open(dataUrl, '_blank'); }
-                    else { const link = document.createElement('a'); link.download = filename; link.href = dataUrl; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
-                };
+                // ** Check isMobile() dynamically here **
+                if (!canvas) return;
+                canvas.onclick = null; // Clear previous listener before adding new one
+
+                if(isMobile()){ // Only add listener if currently mobile
+                    canvas.onclick = () => {
+                        const dataUrl = canvas.toDataURL('image/png'); const word = document.getElementById('wordInput').value || 'Logo';
+                        const aspectRatio = canvas.width === canvas.height ? 'square' : '16x9'; const selectedColors = getSelectedColors();
+                        const textColor = selectedColors[canvasInfo.textColorRole]; const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
+                        const filename = `${word}_${textColor}_on_${bgColor}_${aspectRatio}.png`.replace(/#/g,'');
+                        if (isIOS && navigator.share) { fetch(dataUrl).then(res => res.blob()).then(blob => { if (!blob) throw new Error("Blob failed"); navigator.share({ files: [new File([blob], filename, { type: 'image/png' })], title: filename }).catch(() => window.open(dataUrl, '_blank')); }).catch(() => window.open(dataUrl, '_blank')); }
+                        else if (isIOS) { window.open(dataUrl, '_blank'); }
+                        else { const link = document.createElement('a'); link.download = filename; link.href = dataUrl; document.body.appendChild(link); link.click(); document.body.removeChild(link); }
+                    };
+                }
             });
         }
 
-        // --- Resize Handling (Unchanged) ---
+        // --- Resize Handling (No JS Reordering Needed) ---
         function resizeHandler() {
-            const container = mainContainer; const totalWidth = Math.min(800, container.clientWidth);
+            const container = mainContainer;
+            const totalWidth = Math.min(800, container.clientWidth);
             const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--standard-gap')) || 8;
             const smallScreen = isMobile();
-            canvases.forEach(canvasInfo => {
+
+            canvases.forEach(canvasInfo => { // Resize logic remains the same
                 const canvas = document.getElementById(canvasInfo.id); if (!canvas) return;
                 const canvasRow = canvas.closest('.canvas-row'); if (!canvasRow) return;
-                const displayStyle = window.getComputedStyle(canvasRow).display; if (displayStyle === 'none') canvasRow.style.display = 'flex';
+                // No need to temporarily show/hide row for width calc usually
                 const canvasContainerWidth = smallScreen ? container.clientWidth : (totalWidth - gap) / 2;
                 const displayWidth = Math.max(10, canvasContainerWidth);
                 const nativeRatio = canvas.height / canvas.width; const displayHeight = displayWidth * nativeRatio;
                 canvas.style.width = `${displayWidth}px`; canvas.style.height = `${displayHeight}px`;
-                if (displayStyle === 'none') canvasRow.style.display = displayStyle;
             });
+
             updatePickerBackgrounds();
             generateLogos();
+            // Re-setup clicks on resize to add/remove based on mobile status
             setupCanvasClickEvents();
         }
 
-        // --- Initial Setup (Unchanged) ---
+        // --- Initial Setup (Simplified) ---
         window.initialDrawTriggered = false;
         window.addEventListener('load', () => {
             if (symbolImg.complete && symbolImg.naturalWidth > 0) symbolLoaded = true;
             window.initialDrawTriggered = true;
-            updatePickerBackgrounds();
-            resizeHandler();
+
+            updatePickerBackgrounds(); // Set initial picker colors
+            resizeHandler();        // Initial resize, draw, setup clicks
+
             let resizeTimeout;
-            window.addEventListener('resize', () => { clearTimeout(resizeTimeout); resizeTimeout = setTimeout(resizeHandler, 150); });
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(resizeHandler, 150);
+            });
+
             setTimeout(() => { if(!symbolLoaded) { console.warn("Timeout waiting for symbol."); symbolLoaded = true; generateLogos(); } }, 3000);
         });
 
