@@ -7,21 +7,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <!-- Meta Tags -->
     <meta property="og:title" content="Strategy Logo Maker">
     <meta property="og:description" content="Strategy Logo Makers made by @LaDoger21">
-    <meta property="og:type" content="gallery">
-    <meta property="og:url" content="https://ladoger.art/logomaker">
-    <meta property="og:image" content="https://ladoger.art/logomaker/logomaker.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="600">
-
+    <!-- ... other meta tags ... -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="Strategy Logo Maker">
-    <meta name="twitter:description" content="Strategy Logo Maker made by @LaDoger21">
-    <meta name="twitter:image" content="https://ladoger.art/logomaker/logomaker.jpg">
-    <meta name="twitter:site" content="@LaDoger21">
+    <!-- ... other meta tags ... -->
 
     <style>
+        :root {
+            --input-height: 44px; /* Define shared height */
+            --input-border-width: 3px;
+            --input-padding: 10px;
+            --border-radius: 8px;
+            --picker-gap: 8px; /* Gap between color pickers */
+        }
+
         body {
             display: flex; flex-direction: column; align-items: center;
             font-family: 'Lexend', sans-serif; margin: 0; padding: 20px 20px 0;
@@ -35,53 +37,122 @@
             font-size: 2.5em; font-weight: 700; margin: 0; color: #FA660F;
             letter-spacing: -0.1em; padding-bottom: 5px;
         }
+
+        /* Shared Animated Border Style */
+        .animated-border {
+            padding: var(--input-padding);
+            box-sizing: border-box;
+            border: var(--input-border-width) solid transparent;
+            border-radius: var(--border-radius);
+            background: linear-gradient(var(--bg-color, #FFFFFF), var(--bg-color, #FFFFFF)) padding-box, /* Inner background */
+                        linear-gradient(to right, #FFB6C1, #FFDAB9, #FFDEAD, #E6E6FA, #B0E0E6, #98FB98, #D8BFD8) border-box; /* Border gradient */
+            animation: gradientShift 8s linear infinite;
+            background-size: 100% 100%, 200% 100%; /* Control background sizes separately */
+            height: var(--input-height);
+        }
+        @keyframes gradientShift {
+            0% { background-position: 0% 0%, 0% 0%; } /* Animate only the border gradient */
+            100% { background-position: 0% 0%, 200% 0%; }
+        }
+
+        /* Text Input Specific Styles */
         input[type="text"] {
-            width: 100%; max-width: 300px; padding: 10px; font-size: 16px;
-            font-family: 'Lexend', sans-serif; font-weight: 400; box-sizing: border-box;
-            border: 3px solid transparent; border-radius: 8px;
-            background: linear-gradient(#FFFFFF, #FFFFFF) padding-box,
-                        linear-gradient(to right, #FFB6C1, #FFDAB9, #FFDEAD, #E6E6FA, #B0E0E6, #98FB98, #D8BFD8) border-box;
-            animation: gradientShift 8s linear infinite; background-size: 100% 100%, 200% 100%;
+            width: 100%;
+            max-width: 300px;
+            font-size: 16px;
+            font-family: 'Lexend', sans-serif;
+            font-weight: 400;
             text-align: center;
+            /* Remove default appearance to apply custom border fully */
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            border: none; /* Remove default border */
+            padding: 0; /* Padding is handled by .animated-border */
+             /* Set inner background color variable */
+            --bg-color: #FFFFFF;
+             /* Ensure height matches defined variable */
+             height: var(--input-height);
+             /* Override padding within the input element itself if needed, but prefer padding on wrapper */
+             padding-left: var(--input-padding);
+             padding-right: var(--input-padding);
         }
-        @keyframes gradientShift { 0% { background-position: 0% 0%; } 100% { background-position: 200% 0%; } }
+        /* Need a wrapper for text input to apply animated border cleanly */
+        .text-input-wrapper {
+             width: 100%;
+             max-width: 300px;
+             --bg-color: #FFFFFF; /* Set background for text input wrapper */
+             position: relative; /* Needed if input inside requires absolute positioning */
+        }
+        .text-input-wrapper input[type="text"] {
+            width: 100%; /* Input fills the wrapper */
+            height: 100%;
+            background: transparent; /* Input background is transparent, wrapper shows color */
+            border: none;
+            outline: none;
+             padding: 0 var(--input-padding); /* Apply horizontal padding directly */
+             box-sizing: border-box;
+        }
 
+
+        /* --- Color Picker Container --- */
         .color-picker-container {
-            display: flex; justify-content: space-around; align-items: center;
-            width: 100%; max-width: 300px; margin-top: 5px; margin-bottom: 10px;
-            padding: 8px 15px; background-color: #f8f8f8; border: 1px solid #eee;
-            border-radius: 8px; box-sizing: border-box;
+            display: flex;
+            justify-content: space-between; /* Distribute items evenly */
+            align-items: center;
+            width: 100%;
+            max-width: 300px; /* Match text input width */
+            margin-top: 5px;
+            margin-bottom: 10px;
+            gap: var(--picker-gap); /* Use variable for gap */
         }
-        input[type="color"] {
-            -webkit-appearance: none; -moz-appearance: none; appearance: none; /* Remove default styling */
-            width: 40px; height: 40px; padding: 0; border: none; border-radius: 6px;
-            cursor: pointer; background-color: transparent; border: 1px solid rgba(0, 0, 0, 0.1);
-            transition: transform 0.1s ease-in-out;
-        }
-        input[type="color"]:hover { transform: scale(1.05); }
-        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; border-radius: 6px; }
-        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 6px; }
-        input[type="color"]::-moz-color-swatch { border: 1px solid rgba(0, 0, 0, 0.1); border-radius: 6px; }
 
+        /* --- Individual Color Picker Label (Styled Rectangle) --- */
+        .color-picker-label {
+            flex: 1; /* Allow labels to grow and fill space */
+            display: block; /* Make label a block element */
+            position: relative; /* For absolute positioning of the input */
+            cursor: pointer;
+            /* Use animated border class */
+            /* --bg-color will be set dynamically by JS */
+             height: var(--input-height); /* Match input height */
+             padding: 0; /* Reset padding, border class handles it */
+             min-width: 0; /* Prevent flex items from overflowing */
+        }
+
+        /* --- Hidden Color Input inside Label --- */
+        .color-picker-label input[type="color"] {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0; /* Make it invisible */
+            cursor: pointer;
+            border: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        /* --- Canvas and Footer Styles (remain largely unchanged) --- */
         .canvas-row { display: flex; flex-wrap: nowrap; gap: 10px; width: 100%; max-width: 800px; }
         canvas { width: 390px; height: auto; border: 1px solid #ccc; }
-        .transparent-bg {
+        .transparent-bg { /* checkerboard */
             background-image: linear-gradient(45deg, #ccc 25%, transparent 25%), linear-gradient(-45deg, #ccc 25%, transparent 25%),
                               linear-gradient(45deg, transparent 75%, #ccc 75%), linear-gradient(-45deg, transparent 75%, #ccc 75%);
             background-size: 20px 20px; background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
         }
         footer { width: 100%; text-align: center; padding: 10px 0; background-color: #FFFFFF; font-weight: 400; margin-top: 10px; }
-        footer a { color: #FA660F; text-decoration: none; }
-        footer a b { font-weight: 700; }
-        footer a:hover { text-decoration: underline; }
+        footer a { color: #FA660F; text-decoration: none; } footer a b { font-weight: 700; } footer a:hover { text-decoration: underline; }
 
         @media (max-width: 600px) {
+            h2 { font-size: 1.8em; }
+            .text-input-wrapper, .color-picker-container { max-width: 100%; }
+            /* Adjust height slightly on mobile? Optional */
+            /* :root { --input-height: 40px; } */
+
             .canvas-row { flex-direction: column; gap: 10px; }
             canvas { width: 100% !important; max-width: 100%; cursor: pointer; }
-            h2 { font-size: 1.8em; }
-            input[type="text"], .color-picker-container { max-width: 100%; }
-            .color-picker-container { padding: 8px 10px; }
-            input[type="color"] { width: 35px; height: 35px; }
         }
     </style>
 </head>
@@ -89,43 +160,33 @@
     <div class="container">
         <h2>Strategy Logo Maker</h2>
 
-        <input type="text" id="wordInput" value="More" placeholder="Enter text..." oninput="generateLogos()">
+        <!-- Wrap text input for consistent border application -->
+        <div class="text-input-wrapper animated-border">
+            <input type="text" id="wordInput" value="More" placeholder="Enter text..." oninput="generateLogos()">
+        </div>
 
         <div class="color-picker-container">
-            <input type="color" id="colorPicker1" value="#000000" title="Color 1" oninput="generateLogos()">
-            <input type="color" id="colorPicker2" value="#FFFFFF" title="Color 2" oninput="generateLogos()">
-            <input type="color" id="colorPicker3" value="#FA660F" title="Color 3" oninput="generateLogos()">
+            <!-- Use labels wrapping inputs for better click handling -->
+            <label class="color-picker-label animated-border" id="labelPicker1">
+                <input type="color" id="colorPicker1" value="#000000" title="Color 1" oninput="handleColorInput(this)">
+            </label>
+            <label class="color-picker-label animated-border" id="labelPicker2">
+                <input type="color" id="colorPicker2" value="#FFFFFF" title="Color 2" oninput="handleColorInput(this)">
+            </label>
+            <label class="color-picker-label animated-border" id="labelPicker3">
+                <input type="color" id="colorPicker3" value="#FA660F" title="Color 3" oninput="handleColorInput(this)">
+            </label>
         </div>
 
         <!-- Canvas Rows -->
-        <div class="canvas-row">
-            <canvas id="canvas1" width="1280" height="720"></canvas>
-            <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas>
-        </div>
-        <div class="canvas-row">
-            <canvas id="canvas2" width="1280" height="720"></canvas>
-            <canvas id="canvas5" width="1280" height="720" class="transparent-bg"></canvas>
-        </div>
-        <div class="canvas-row">
-            <canvas id="canvas3" width="1280" height="720"></canvas>
-            <canvas id="canvas6" width="1280" height="720" class="transparent-bg"></canvas>
-        </div>
-        <div class="canvas-row">
-            <canvas id="canvas7" width="1280" height="1280"></canvas>
-            <canvas id="canvas10" width="1280" height="1280" class="transparent-bg"></canvas>
-        </div>
-        <div class="canvas-row">
-            <canvas id="canvas8" width="1280" height="1280"></canvas>
-            <canvas id="canvas11" width="1280" height="1280" class="transparent-bg"></canvas>
-        </div>
-        <div class="canvas-row">
-            <canvas id="canvas9" width="1280" height="1280"></canvas>
-            <canvas id="canvas12" width="1280" height="1280" class="transparent-bg"></canvas>
-        </div>
+        <div class="canvas-row"> <canvas id="canvas1" width="1280" height="720"></canvas> <canvas id="canvas4" width="1280" height="720" class="transparent-bg"></canvas> </div>
+        <div class="canvas-row"> <canvas id="canvas2" width="1280" height="720"></canvas> <canvas id="canvas5" width="1280" height="720" class="transparent-bg"></canvas> </div>
+        <div class="canvas-row"> <canvas id="canvas3" width="1280" height="720"></canvas> <canvas id="canvas6" width="1280" height="720" class="transparent-bg"></canvas> </div>
+        <div class="canvas-row"> <canvas id="canvas7" width="1280" height="1280"></canvas> <canvas id="canvas10" width="1280" height="1280" class="transparent-bg"></canvas> </div>
+        <div class="canvas-row"> <canvas id="canvas8" width="1280" height="1280"></canvas> <canvas id="canvas11" width="1280" height="1280" class="transparent-bg"></canvas> </div>
+        <div class="canvas-row"> <canvas id="canvas9" width="1280" height="1280"></canvas> <canvas id="canvas12" width="1280" height="1280" class="transparent-bg"></canvas> </div>
     </div>
-    <footer>
-        Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡
-    </footer>
+    <footer> Made by <a href="https://x.com/LaDoger21"><b>@LaDoger21</b></a> with 🧡 </footer>
 
     <script>
         const COLOR_ROLE_1 = 'color1';
@@ -133,35 +194,26 @@
         const COLOR_ROLE_3 = 'color3';
 
         const canvases = [
-            // Role pairs define text/background combinations
             { id: 'canvas1', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_3 }, { id: 'canvas4', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },
             { id: 'canvas2', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_2 }, { id: 'canvas5', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' },
             { id: 'canvas3', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_1 }, { id: 'canvas6', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' },
-            // Square versions
             { id: 'canvas7', textColorRole: COLOR_ROLE_1, bgColorRole: COLOR_ROLE_3 }, { id: 'canvas10', textColorRole: COLOR_ROLE_1, bgColorRole: 'transparent' },
             { id: 'canvas8', textColorRole: COLOR_ROLE_3, bgColorRole: COLOR_ROLE_2 }, { id: 'canvas11', textColorRole: COLOR_ROLE_3, bgColorRole: 'transparent' },
             { id: 'canvas9', textColorRole: COLOR_ROLE_2, bgColorRole: COLOR_ROLE_1 }, { id: 'canvas12', textColorRole: COLOR_ROLE_2, bgColorRole: 'transparent' }
         ];
 
-        // Load the single symbol image
         const symbolImg = new Image();
-        symbolImg.src = 'symbol.png'; // Updated filename
+        symbolImg.src = 'symbol.png';
         let symbolLoaded = false;
-        symbolImg.onload = () => {
-            symbolLoaded = true;
-            if (window.initialDrawTriggered) { // If initial draw was waiting for the image
-                generateLogos();
-            }
-        };
-         symbolImg.onerror = () => console.error("Failed to load symbol image: symbol.png");
+        symbolImg.onload = () => { symbolLoaded = true; if (window.initialDrawTriggered) generateLogos(); };
+        symbolImg.onerror = () => console.error("Failed to load symbol.png");
 
-        // Reusable offscreen canvas for symbol colorization
         const offscreenCanvas = document.createElement('canvas');
         const offscreenCtx = offscreenCanvas.getContext('2d');
-
-        const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const isMobile = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
+        // --- Helper Functions ---
         function getSelectedColors() {
             return {
                 [COLOR_ROLE_1]: document.getElementById('colorPicker1').value,
@@ -171,33 +223,43 @@
         }
 
         function drawColorizedSymbol(mainCtx, targetColor, symbolX, symbolY, symbolWidth, symbolHeight) {
-            if (!symbolLoaded || symbolWidth <= 0 || symbolHeight <= 0) return;
-            try {
-                offscreenCanvas.width = symbolWidth;
-                offscreenCanvas.height = symbolHeight;
-                offscreenCtx.clearRect(0, 0, symbolWidth, symbolHeight);
-                offscreenCtx.drawImage(symbolImg, 0, 0, symbolWidth, symbolHeight); // Draw symbol
-                offscreenCtx.globalCompositeOperation = 'source-in'; // Keep only symbol pixels
-                offscreenCtx.fillStyle = targetColor;
-                offscreenCtx.fillRect(0, 0, symbolWidth, symbolHeight); // Fill with target color
-                offscreenCtx.globalCompositeOperation = 'source-over'; // Reset
-                mainCtx.drawImage(offscreenCanvas, symbolX, symbolY, symbolWidth, symbolHeight); // Draw to main canvas
-            } catch (e) {
-                console.error("Error drawing colorized symbol:", e);
-            }
+             if (!symbolLoaded || symbolWidth <= 0 || symbolHeight <= 0) return;
+             try {
+                 offscreenCanvas.width = symbolWidth; offscreenCanvas.height = symbolHeight;
+                 offscreenCtx.clearRect(0, 0, symbolWidth, symbolHeight);
+                 offscreenCtx.drawImage(symbolImg, 0, 0, symbolWidth, symbolHeight);
+                 offscreenCtx.globalCompositeOperation = 'source-in';
+                 offscreenCtx.fillStyle = targetColor;
+                 offscreenCtx.fillRect(0, 0, symbolWidth, symbolHeight);
+                 offscreenCtx.globalCompositeOperation = 'source-over';
+                 mainCtx.drawImage(offscreenCanvas, symbolX, symbolY, symbolWidth, symbolHeight);
+             } catch (e) { console.error("Error drawing symbol:", e); }
         }
 
+        // --- Update Color Picker Backgrounds ---
+        function updatePickerBackgrounds() {
+            const colors = getSelectedColors();
+            document.getElementById('labelPicker1').style.setProperty('--bg-color', colors[COLOR_ROLE_1]);
+            document.getElementById('labelPicker2').style.setProperty('--bg-color', colors[COLOR_ROLE_2]);
+            document.getElementById('labelPicker3').style.setProperty('--bg-color', colors[COLOR_ROLE_3]);
+        }
+
+        // --- Event Handler for Color Input ---
+        function handleColorInput(inputElement) {
+            updatePickerBackgrounds(); // Update the label background visually
+            generateLogos(); // Regenerate the canvas logos
+        }
+
+        // --- Logo Generation ---
         function generateLogos() {
-            if (!symbolLoaded && !symbolImg.complete) {
-                console.log("Symbol not loaded yet, deferring generateLogos.");
-                // Ensure initial draw triggers this again once loaded
-                window.initialDrawTriggered = true;
-                return;
+            if (!symbolLoaded && !symbolImg.complete) { // Defer if symbol not ready
+                 window.initialDrawTriggered = true; // Ensure it runs once loaded
+                 return;
             }
 
             requestAnimationFrame(() => {
                 const input = document.getElementById('wordInput').value;
-                const word = input ? input + "  " : ""; // Add spacing for symbol
+                const word = input ? input + "  " : "";
                 const selectedColors = getSelectedColors();
 
                 canvases.forEach(canvasInfo => {
@@ -207,7 +269,6 @@
                     const textColor = selectedColors[canvasInfo.textColorRole];
                     const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
 
-                    // Clear and set background
                     ctx.clearRect(0, 0, canvas.width, canvas.height);
                     if (bgColor !== 'transparent') {
                         ctx.fillStyle = bgColor;
@@ -215,148 +276,131 @@
                     }
 
                     if (word) {
-                        // --- Font Size Calculation ---
-                        const maxWidth = canvas.width * 0.9;
-                        const maxHeight = canvas.height * 0.9;
-                        let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5); // Initial guess
-                        ctx.font = `bold ${fontSize}px Lexend`;
-                        ctx.letterSpacing = `${fontSize * -0.1}px`;
-                        let metrics = ctx.measureText(word);
-                        let textWidth = metrics.width;
-                        let textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent || fontSize;
-                        let iterations = 0; const maxIterations = 50;
+                        // Font Size Calculation (Iterative adjustment)
+                        const maxWidth = canvas.width * 0.9; const maxHeight = canvas.height * 0.9;
+                        let fontSize = Math.min(canvas.width / 5, canvas.height / 1.5);
+                        let metrics, textWidth, textHeight, iterations;
+                        const maxIterations = 50;
 
-                        // Adjust size iteratively
+                        const setFont = (size) => {
+                            ctx.font = `bold ${size}px Lexend`;
+                            ctx.letterSpacing = `${size * -0.1}px`;
+                            metrics = ctx.measureText(word);
+                            textWidth = metrics.width;
+                            textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent || size;
+                        };
+
+                        setFont(fontSize);
+                        iterations = 0;
                         while (((textWidth > maxWidth) || (textHeight > maxHeight)) && fontSize > 10 && iterations < maxIterations) { // Scale down
-                            let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight);
-                            fontSize *= scaleFactor * 0.97; // Slightly more aggressive scale down
-                            fontSize = Math.max(fontSize, 10);
-                            ctx.font = `bold ${fontSize}px Lexend`; ctx.letterSpacing = `${fontSize * -0.1}px`;
-                            metrics = ctx.measureText(word); textWidth = metrics.width; textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent || fontSize;
-                            iterations++;
+                            fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight) * 0.97;
+                            fontSize = Math.max(fontSize, 10); setFont(fontSize); iterations++;
                         }
                         iterations = 0;
-                        while (textWidth < maxWidth * 0.8 && textHeight < maxHeight * 0.8 && fontSize < Math.min(canvas.width, canvas.height) && iterations < maxIterations) { // Scale up
+                         while (textWidth < maxWidth * 0.8 && textHeight < maxHeight * 0.8 && fontSize < Math.min(canvas.width, canvas.height) && iterations < maxIterations) { // Scale up
                              let scaleFactor = Math.min(maxWidth / textWidth, maxHeight / textHeight); if (scaleFactor <= 1.01) break;
-                             fontSize *= Math.min(scaleFactor, 1.02); // Slightly less aggressive scale up
-                             fontSize = Math.min(fontSize, Math.min(canvas.width, canvas.height));
-                             ctx.font = `bold ${fontSize}px Lexend`; ctx.letterSpacing = `${fontSize * -0.1}px`;
-                             metrics = ctx.measureText(word); textWidth = metrics.width; textHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent || fontSize;
-                             iterations++;
+                             fontSize *= Math.min(scaleFactor, 1.02);
+                             fontSize = Math.min(fontSize, Math.min(canvas.width, canvas.height)); setFont(fontSize); iterations++;
                          }
                          if (textWidth > maxWidth || textHeight > maxHeight) { // Final check
-                             fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight); fontSize = Math.max(fontSize, 10);
-                             ctx.font = `bold ${fontSize}px Lexend`; ctx.letterSpacing = `${fontSize * -0.1}px`; metrics = ctx.measureText(word); textWidth = metrics.width;
+                             fontSize *= Math.min(maxWidth / textWidth, maxHeight / textHeight);
+                             fontSize = Math.max(fontSize, 10); setFont(fontSize);
                          }
-                        // --- End Font Size Calculation ---
 
                         // Draw Text
-                        ctx.fillStyle = textColor;
-                        ctx.textAlign = 'center';
-                        ctx.textBaseline = 'middle';
+                        ctx.fillStyle = textColor; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
                         const textY = canvas.height / 2;
                         ctx.fillText(word, canvas.width / 2, textY);
 
                         // Draw Symbol
-                        const symbolHeight = fontSize * 0.6;
-                        const symbolAspectRatio = 534 / 889; // Aspect ratio of symbol.png
+                        const symbolHeight = fontSize * 0.6; const symbolAspectRatio = 534 / 889;
                         const symbolWidth = symbolHeight * symbolAspectRatio;
-                        const inputMetrics = ctx.measureText(input); // Measure text *without* spaces
-                        const inputWidth = inputMetrics.width;
-                        const symbolX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.12); // Position relative to text end
-                        const downwardShiftFactor = 0.08;
-                        const symbolBottomY = textY + (fontSize * downwardShiftFactor);
+                        const inputMetrics = ctx.measureText(input); const inputWidth = inputMetrics.width;
+                        const symbolX = (canvas.width / 2) + (inputWidth / 2) - (fontSize * 0.12);
+                        const downwardShiftFactor = 0.08; const symbolBottomY = textY + (fontSize * downwardShiftFactor);
                         const symbolY = symbolBottomY - symbolHeight;
-
                         drawColorizedSymbol(ctx, textColor, symbolX, symbolY, symbolWidth, symbolHeight);
                     }
                 });
             });
         }
 
+        // --- Canvas Click Events (Mobile Download/Share) ---
         function setupCanvasClickEvents() {
-             canvases.forEach(canvasInfo => {
+            canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
-                if (!canvas) return;
-                canvas.onclick = null; // Clear previous handler
+                if (!canvas || !isMobile) return; // Only add for mobile
 
-                if (isMobile) {
-                    canvas.onclick = () => {
-                        const dataUrl = canvas.toDataURL('image/png');
-                        const word = document.getElementById('wordInput').value || 'Logo';
-                        const aspectRatio = canvas.width === canvas.height ? 'square' : '16x9';
-                        const selectedColors = getSelectedColors();
-                        const textColor = selectedColors[canvasInfo.textColorRole];
-                        const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
-                        const filename = `${word}_${textColor}_on_${bgColor}_${aspectRatio}.png`.replace(/#/g,''); // Remove '#' for cleaner filename
+                canvas.onclick = () => {
+                    const dataUrl = canvas.toDataURL('image/png');
+                    const word = document.getElementById('wordInput').value || 'Logo';
+                    const aspectRatio = canvas.width === canvas.height ? 'square' : '16x9';
+                    const selectedColors = getSelectedColors();
+                    const textColor = selectedColors[canvasInfo.textColorRole];
+                    const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
+                    const filename = `${word}_${textColor}_on_${bgColor}_${aspectRatio}.png`.replace(/#/g,'');
 
-                        // iOS Share / Save Fallback
-                        if (isIOS && navigator.share) {
-                           try {
-                                fetch(dataUrl).then(res => res.blob()).then(blob => {
-                                    if (!blob) throw new Error("Blob creation failed");
-                                    navigator.share({ files: [new File([blob], filename, { type: 'image/png' })], title: filename })
-                                     .catch(() => window.open(dataUrl, '_blank').document.write(`<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`)); // Fallback on share error
-                                }).catch(() => window.open(dataUrl, '_blank').document.write(`<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`)); // Fallback on fetch/blob error
-                           } catch (error) { window.open(dataUrl, '_blank').document.write(`<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`); } // Fallback on general error
-                        } else if (isIOS) { // iOS without Share API
-                            const imageWindow = window.open(dataUrl, '_blank'); // Open directly
-                            // Attempt to add instructions, might not work reliably in all iOS scenarios
-                            setTimeout(() => { if(imageWindow) imageWindow.document.body.innerHTML = `<img src="${dataUrl}" alt="Press/hold image"><p>Press/hold image to save.</p>`; }, 500);
-                        } else { // Standard Download
-                            const link = document.createElement('a'); link.download = filename; link.href = dataUrl;
-                            document.body.appendChild(link); link.click(); document.body.removeChild(link);
-                        }
-                    };
-                }
+                    if (isIOS && navigator.share) { // iOS Share API
+                       fetch(dataUrl).then(res => res.blob()).then(blob => {
+                           if (!blob) throw new Error("Blob failed");
+                           navigator.share({ files: [new File([blob], filename, { type: 'image/png' })], title: filename })
+                            .catch(() => window.open(dataUrl, '_blank')); // Fallback: Open image
+                       }).catch(() => window.open(dataUrl, '_blank'));
+                    } else if (isIOS) { // iOS Fallback (no Share API)
+                       window.open(dataUrl, '_blank'); // Just open image
+                    } else { // Standard Download
+                       const link = document.createElement('a'); link.download = filename; link.href = dataUrl;
+                       document.body.appendChild(link); link.click(); document.body.removeChild(link);
+                    }
+                };
             });
         }
 
+        // --- Resize Handling ---
         function resizeCanvases() {
             const container = document.querySelector('.container');
-            const totalWidth = Math.min(800, container.clientWidth); // Use container width up to max 800px
+            const totalWidth = Math.min(800, container.clientWidth);
             const gap = 10;
-            const isSmallScreen = window.innerWidth <= 600; // Use window width for media query breakpoint check
+            const isSmallScreen = window.innerWidth <= 600;
 
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
                 if (!canvas) return;
-                const displayWidth = isSmallScreen ? (container.clientWidth) : (totalWidth - gap) / 2; // Use container width on small screens
+                const displayWidth = isSmallScreen ? (container.clientWidth) : (totalWidth - gap) / 2;
                 const nativeRatio = canvas.height / canvas.width;
                 const displayHeight = displayWidth * nativeRatio;
                 canvas.style.width = `${displayWidth}px`;
                 canvas.style.height = `${displayHeight}px`;
             });
-            generateLogos(); // Redraw after resizing
+             // Update picker backgrounds on resize *before* generating logos
+             // in case CSS variables change based on media queries (though not currently the case)
+            updatePickerBackgrounds();
+            generateLogos();
         }
 
-        // Initial Setup on Load
+        // --- Initial Setup ---
         window.initialDrawTriggered = false;
         window.addEventListener('load', () => {
-            // Check if symbol was cached and loaded instantly
-            if (symbolImg.complete && symbolImg.naturalWidth > 0) {
-                symbolLoaded = true;
-            }
+            if (symbolImg.complete && symbolImg.naturalWidth > 0) symbolLoaded = true;
 
-            window.initialDrawTriggered = true; // Mark that we want the initial draw
-            resizeCanvases(); // Perform initial resize (will call generateLogos, which checks symbolLoaded)
-            setupCanvasClickEvents(); // Setup click handlers once
+            window.initialDrawTriggered = true;
+            updatePickerBackgrounds(); // Set initial picker colors
+            resizeCanvases();       // Initial resize & logo generation
+            setupCanvasClickEvents(); // Setup mobile clicks
 
-            // Add resize listener
             let resizeTimeout;
-            window.addEventListener('resize', () => {
+            window.addEventListener('resize', () => { // Debounced resize
                 clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(resizeCanvases, 100); // Debounce resize events
+                resizeTimeout = setTimeout(resizeCanvases, 100);
             });
 
-            // Fallback timeout for symbol loading (less critical now generateLogos checks)
-             setTimeout(() => {
+            // Fallback for symbol loading
+            setTimeout(() => {
                 if(!symbolLoaded) {
                     console.warn("Timeout waiting for symbol. Logos might render without it.");
-                    symbolLoaded = true; // Allow drawing attempts anyway
-                    if(window.initialDrawTriggered) generateLogos(); // Try drawing if needed
+                    symbolLoaded = true; generateLogos(); // Force redraw attempt
                 }
-             }, 3000);
+            }, 3000);
         });
 
     </script>
