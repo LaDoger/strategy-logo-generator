@@ -431,11 +431,7 @@
                         if (majorVer < 18 || (majorVer === 18 && minorVer < 4)) {
                             alert("Please upgrade to iOS 18.4. The logo will be rendered prettier!");
                         }
-                        // --- TEST WARNING: Check if version IS 18.4 ---
-                        else if (majorVer === 18 && minorVer === 4) {
-                            alert("You are using iOS 18.4"); // Test message
-                        }
-                        // No alert for iOS 18.5+, 19+, etc.
+                        // No alert for iOS 18.4+, 19+, etc.
                     } else {
                         console.warn("Could not parse iOS version numbers from User Agent:", userAgent);
                     }
