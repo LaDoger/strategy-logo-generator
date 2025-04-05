@@ -26,11 +26,7 @@
             --input-padding: 10px; /* Padding inside the wrapper HORIZONTALLY */
             --border-radius: 8px;
             --standard-gap: 12px; /* Unified gap */
-            /* Removed button size variables, as they are auto now */
-            /* --button-margin: 6px; /* No longer needed for positioning */
-            /* Define emoji font size */
             --emoji-button-font-size: 20px;
-            /* NEW: Define button offset from edge */
             --emoji-button-edge-offset: 6px;
         }
 
@@ -79,7 +75,6 @@
             position: relative;
             display: flex;
             align-items: center;
-            /* Horizontal padding applied ONLY to wrapper, input fills it */
             padding: 0 var(--input-padding);
         }
 
@@ -95,14 +90,12 @@
         .text-input-wrapper {
             width: 100%;
             max-width: 300px;
-            /* position: relative; /* Already set */
         }
 
-        /* Input text styling */
         .text-input-wrapper input[type="text"]#wordInput,
         .signature-input-wrapper input[type="text"]#signatureInput {
             flex-grow: 1;
-            height: 100%; /* Make input fill vertical space */
+            height: 100%;
             background: transparent;
             border: none;
             outline: none;
@@ -110,11 +103,10 @@
             font-size: 16px;
             font-family: 'Lexend', sans-serif;
             font-weight: 400;
-            text-align: center; /* Keep centered */
+            text-align: center;
             line-height: normal;
-            /* REMOVED padding-right */
-            padding: 0; /* Remove all input padding, rely on wrapper padding */
-            width: 100%; /* Ensure it tries to fill width */
+            padding: 0;
+            width: 100%;
         }
 
         .signature-input-wrapper input[type="text"]#signatureInput {
@@ -127,10 +119,8 @@
             color: #aaa;
         }
 
-        /* --- MODIFIED: Emoji Button Base Styles --- */
         .emoji-button {
             position: absolute;
-            /* MODIFIED: Use variable for edge offset */
             right: var(--emoji-button-edge-offset);
             top: 50%;
             transform: translateY(-50%);
@@ -157,31 +147,32 @@
            opacity: 0.7;
         }
 
-        #signatureToggleBtn {
-           /* Inherits from .emoji-button */
-        }
+        /* No longer need .active specific styles for the toggle button */
+        /* #signatureToggleBtn.active { ... } */
 
-        #signatureToggleBtn.active {
-           opacity: 1;
-           /* color: #FA660F; */
-        }
-
-        .signature-input-wrapper {
+        /* --- NEW: Hide signature and color options by default --- */
+        .signature-input-wrapper,
+        #colorOptionsContainer {
             width: 100%;
             max-width: 300px;
-            display: none;
+            display: none; /* Initially hidden */
         }
 
-        .signature-input-wrapper.visible {
+        /* Show when .visible class is added */
+        .signature-input-wrapper.visible,
+        #colorOptionsContainer.visible {
             display: flex;
         }
+
+        /* --- END NEW --- */
 
         .color-picker-container {
-            display: flex;
+            /* Now targeted by ID for hiding/showing */
+            /* display: flex; */ /* Moved to #colorOptionsContainer.visible */
             justify-content: center;
             align-items: center;
-            width: 100%;
-            max-width: 300px;
+            /* width: 100%; */ /* Moved to #colorOptionsContainer */
+            /* max-width: 300px; */ /* Moved to #colorOptionsContainer */
             gap: calc(var(--standard-gap) / 2);
         }
 
@@ -286,12 +277,13 @@
             }
 
             .text-input-wrapper,
-            .signature-input-wrapper,
-            .color-picker-container {
+            .signature-input-wrapper, /* Still apply max-width when visible */
+            #colorOptionsContainer { /* Still apply max-width when visible */
                 max-width: 100%;
             }
 
-            .color-picker-container {
+            /* Apply gap to the container only when visible */
+            #colorOptionsContainer.visible {
                 gap: 5px;
             }
 
@@ -301,8 +293,8 @@
             }
 
              :root {
-                 --emoji-button-font-size: 22px; /* Slightly larger on mobile? */
-                 --emoji-button-edge-offset: 8px; /* Adjust offset for mobile if needed */
+                 --emoji-button-font-size: 22px;
+                 --emoji-button-edge-offset: 8px;
              }
 
             .signature-input-wrapper input[type="text"]#signatureInput {
@@ -315,6 +307,39 @@
                 gap: var(--standard-gap);
             }
 
+            /* Ensure hidden elements don't disrupt grid order */
+            .signature-input-wrapper,
+            #colorOptionsContainer {
+                order: 3; /* Keep their intended order relative to text input */
+            }
+            #colorOptionsContainer {
+                 order: 4;
+            }
+
+            /* Adjust subsequent orders if needed, but grid handles hidden items well */
+            h2 { order: 1; }
+            .text-input-wrapper { order: 2; }
+            /* Signature and Color Containers have order 3 & 4 */
+            #canvas1 { order: 5; }
+            #canvas4 { order: 6; }
+            #canvas2 { order: 7; }
+            #canvas5 { order: 8; }
+            #canvas3 { order: 9; }
+            #canvas6 { order: 10; }
+            #canvas7 { order: 11; }
+            #canvas10 { order: 12; }
+            #canvas8 { order: 13; }
+            #canvas11 { order: 14; }
+            #canvas9 { order: 15; }
+            #canvas12 { order: 16; }
+            footer { order: 99; }
+
+            /* Already defined */
+            /* .signature-input-wrapper.visible,
+            #colorOptionsContainer.visible {
+               display: flex;
+            } */
+
             .canvas-row {
                 display: contents;
             }
@@ -325,28 +350,6 @@
                 height: auto !important;
                 cursor: pointer;
             }
-
-            h2 { order: 1; }
-            .text-input-wrapper { order: 2; }
-            .signature-input-wrapper { order: 3; }
-            .color-picker-container { order: 4; }
-            #canvas1 { order: 5; }
-            #canvas2 { order: 6; }
-            #canvas3 { order: 7; }
-            #canvas7 { order: 8; }
-            #canvas8 { order: 9; }
-            #canvas9 { order: 10; }
-            #canvas4 { order: 11; }
-            #canvas5 { order: 12; }
-            #canvas6 { order: 13; }
-            #canvas10 { order: 14; }
-            #canvas11 { order: 15; }
-            #canvas12 { order: 16; }
-            footer { order: 99; }
-
-            .signature-input-wrapper.visible {
-               display: flex;
-            }
         }
     </style>
 </head>
@@ -355,15 +358,16 @@
     <div class="container" id="mainContainer">
         <h2>Strategy Logo Maker</h2>
         <div class="text-input-wrapper">
-            <!-- Input text should now center properly -->
             <input type="text" id="wordInput" value="More" placeholder="Enter text..." oninput="generateLogos()">
-            <!-- Button positioning controlled by CSS -->
-            <button class="emoji-button" id="signatureToggleBtn" title="Add Signature">📝</button>
+            <!-- MODIFIED: Changed emoji and title -->
+            <button class="emoji-button" id="optionsToggleBtn" title="Show/Hide Options">🔽</button>
         </div>
+        <!-- MODIFIED: Starts hidden -->
         <div class="signature-input-wrapper" id="signatureInputWrapper">
-            <input type="text" id="signatureInput" value="" placeholder="Add signature..." oninput="generateLogos()">
+            <input type="text" id="signatureInput" placeholder="Add signature..." oninput="generateLogos()">
         </div>
-        <div class="color-picker-container">
+        <!-- MODIFIED: Added ID, starts hidden -->
+        <div class="color-picker-container" id="colorOptionsContainer">
             <label class="color-picker-label" id="labelPicker1">
                 <input type="color" id="colorPicker1" value="#000000" title="Color 1 (Default Black)" oninput="handleColorInput(this)">
             </label>
@@ -404,7 +408,7 @@
     </div>
 
 <script>
-    // NO CHANGES TO SCRIPT NEEDED
+    // NO CHANGES TO SCRIPT NEEDED FOR CANVAS/DRAWING LOGIC ITSELF
     const COLOR_ROLE_1 = 'color1';
     const COLOR_ROLE_2 = 'color2';
     const COLOR_ROLE_3 = 'color3';
@@ -445,10 +449,13 @@
     const mainContainer = document.getElementById('mainContainer');
     window.initialDrawTriggered = false;
 
-    const signatureToggleBtn = document.getElementById('signatureToggleBtn');
+    // --- MODIFIED SCRIPT SECTION ---
+    const optionsToggleBtn = document.getElementById('optionsToggleBtn'); // Renamed from signatureToggleBtn
     const signatureInputWrapper = document.getElementById('signatureInputWrapper');
     const signatureInput = document.getElementById('signatureInput');
-    let isSignatureVisible = false;
+    const colorOptionsContainer = document.getElementById('colorOptionsContainer'); // Get the color options container
+    let isOptionsVisible = false; // Renamed state variable, starts false
+    // --- END MODIFIED SCRIPT SECTION ---
 
     const colorPicker1 = document.getElementById('colorPicker1');
     const colorPicker2 = document.getElementById('colorPicker2');
@@ -504,9 +511,12 @@
     }
 
     function updatePickerBackgrounds() {
-        document.getElementById('labelPicker1').style.setProperty('--bg-color', colorPicker1.value);
-        document.getElementById('labelPicker2').style.setProperty('--bg-color', colorPicker2.value);
-        document.getElementById('labelPicker3').style.setProperty('--bg-color', colorPicker3.value);
+        // Only update if the pickers are potentially visible
+        if (colorOptionsContainer) {
+            document.getElementById('labelPicker1').style.setProperty('--bg-color', colorPicker1.value);
+            document.getElementById('labelPicker2').style.setProperty('--bg-color', colorPicker2.value);
+            document.getElementById('labelPicker3').style.setProperty('--bg-color', colorPicker3.value);
+        }
     }
 
     function handleColorInput(inputElement) {
@@ -514,12 +524,21 @@
         generateLogos();
     }
 
-    function toggleSignatureInput() {
-        isSignatureVisible = !isSignatureVisible;
-        signatureInputWrapper.classList.toggle('visible', isSignatureVisible);
-        signatureToggleBtn.classList.toggle('active', isSignatureVisible);
+    // --- MODIFIED FUNCTION ---
+    function toggleOptionsVisibility() {
+        isOptionsVisible = !isOptionsVisible; // Toggle the state
+
+        // Toggle visibility for both containers
+        signatureInputWrapper.classList.toggle('visible', isOptionsVisible);
+        colorOptionsContainer.classList.toggle('visible', isOptionsVisible);
+
+        // Change the button emoji based on state
+        optionsToggleBtn.textContent = isOptionsVisible ? '🔼' : '🔽';
+
+        // Regenerate logos because signature visibility might have changed
         generateLogos();
     }
+    // --- END MODIFIED FUNCTION ---
 
     function swapColors12() {
         const tempColor = colorPicker1.value;
@@ -548,7 +567,8 @@
             const input = document.getElementById('wordInput').value;
             const word = input ? input + "  " : "";
             const selectedColors = getSelectedColors();
-            const signatureText = isSignatureVisible ? signatureInput.value.trim() : '';
+            // MODIFIED: Use isOptionsVisible to determine if signature should be considered
+            const signatureText = isOptionsVisible ? signatureInput.value.trim() : '';
 
             canvases.forEach(canvasInfo => {
                 const canvas = document.getElementById(canvasInfo.id);
@@ -628,6 +648,7 @@
                         }
                 }
 
+                // Signature drawing depends on signatureText being non-empty (which now requires isOptionsVisible to be true)
                 if (signatureText) {
                     ctx.fillStyle = textColor;
                     ctx.font = '400 40px Inter';
@@ -660,7 +681,8 @@
                         const selectedColors = getSelectedColors();
                         const textColor = selectedColors[canvasInfo.textColorRole];
                         const bgColor = canvasInfo.bgColorRole === 'transparent' ? 'transparent' : selectedColors[canvasInfo.bgColorRole];
-                        const sigText = isSignatureVisible ? signatureInput.value.trim() : '';
+                        // MODIFIED: Use isOptionsVisible for signature part of filename
+                        const sigText = isOptionsVisible ? signatureInput.value.trim() : '';
                         const sigPart = sigText ? `_sig-${sigText.replace(/[^a-z0-9]/gi, '')}` : '';
                         const cleanTextColor = textColor.replace('#', '');
                         const cleanBgColor = bgColor === 'transparent' ? 'transp' : bgColor.replace('#', '');
@@ -745,10 +767,11 @@
             if (symbolImg.complete && symbolImg.naturalWidth > 0) {
                 symbolLoaded = true;
             }
-            updatePickerBackgrounds();
-            resizeHandler();
+            updatePickerBackgrounds(); // Initial background update (pickers are hidden but values exist)
+            resizeHandler(); // Calls generateLogos which respects initial hidden state
 
-            signatureToggleBtn.addEventListener('click', toggleSignatureInput);
+            // MODIFIED: Attach listener to the new toggle button and function
+            optionsToggleBtn.addEventListener('click', toggleOptionsVisibility);
 
             const swapBtn12 = document.getElementById('swapColor12Btn');
             const swapBtn23 = document.getElementById('swapColor23Btn');
@@ -771,6 +794,7 @@
                 }
             }, 3000);
 
+            // Initial draw might have been queued if symbol wasn't ready
             if (window.initialDrawTriggered && symbolLoaded) {
                 generateLogos();
             }
