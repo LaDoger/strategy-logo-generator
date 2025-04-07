@@ -578,7 +578,6 @@
         };
     }
 
-    // Helper function to convert hex color to RGB object
     function hexToRgb(hex) {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? {
@@ -588,9 +587,7 @@
         } : null;
     }
 
-    // Helper function for linear interpolation between two numbers
     function lerp(a, b, amount) {
-        // Clamp amount to [0, 1]
         const t = Math.max(0, Math.min(1, amount));
         return a + (b - a) * t;
     }
@@ -831,25 +828,49 @@
         }
     }
 
-    // Function to apply grayscale filter using CSS filter property (simpler)
+    // --- REVISED: Function to apply grayscale filter using ImageData ---
     function applyGrayscaleFilter(targetCtx, img) {
         const canvasWidth = targetCtx.canvas.width;
         const canvasHeight = targetCtx.canvas.height;
 
-        // Use the filter canvas just to apply the filter easily
+        // 1. Draw original image onto filter canvas to get pixel data
         filterCanvas.width = canvasWidth;
         filterCanvas.height = canvasHeight;
         filterCtx.clearRect(0, 0, canvasWidth, canvasHeight);
+        drawBackgroundImageCover(filterCtx, img); // Draw source image scaled/cropped
 
-        filterCtx.filter = 'grayscale(100%)';
-        drawBackgroundImageCover(filterCtx, img); // Draw onto filter canvas with filter active
-        filterCtx.filter = 'none'; // Reset filter
+        try {
+            // 2. Get image data
+            const imageData = filterCtx.getImageData(0, 0, canvasWidth, canvasHeight);
+            const data = imageData.data;
 
-        // Draw the result onto the target canvas
-        targetCtx.drawImage(filterCanvas, 0, 0);
+            // 3. Iterate through pixels and apply grayscale logic
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                // Calculate luminosity (standard formula)
+                const gray = Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b);
+
+                // Set R, G, and B to the calculated gray value
+                data[i] = gray;
+                data[i + 1] = gray;
+                data[i + 2] = gray;
+                // Keep original alpha: data[i + 3] = alpha;
+            }
+
+            // 4. Put the modified image data back onto the *target* canvas
+            targetCtx.putImageData(imageData, 0, 0);
+
+        } catch (e) {
+            console.error("Error processing image data for grayscale:", e);
+            drawBackgroundImageCover(targetCtx, img); // Fallback to original image
+        }
     }
+    // --- END REVISED Function ---
 
-    // --- REVISED: Function to apply duotone filter using ImageData ---
+    // Function to apply duotone filter using ImageData (Remains the same)
     function applyDuotoneFilter(targetCtx, img, colorDarkHex, colorLightHex) {
         const canvasWidth = targetCtx.canvas.width;
         const canvasHeight = targetCtx.canvas.height;
@@ -857,59 +878,42 @@
         const colorDark = hexToRgb(colorDarkHex);
         const colorLight = hexToRgb(colorLightHex);
 
-        // Basic validation
         if (!colorDark || !colorLight) {
             console.error("Invalid duotone colors provided:", colorDarkHex, colorLightHex);
-            drawBackgroundImageCover(targetCtx, img); // Fallback to original image
+            drawBackgroundImageCover(targetCtx, img);
             return;
         }
 
-        // 1. Draw original image onto filter canvas to get pixel data
         filterCanvas.width = canvasWidth;
         filterCanvas.height = canvasHeight;
         filterCtx.clearRect(0, 0, canvasWidth, canvasHeight);
-        // Draw the image onto the filter canvas *first* using the cover logic
-        drawBackgroundImageCover(filterCtx, img); // Draw source image scaled/cropped
+        drawBackgroundImageCover(filterCtx, img);
 
         try {
-            // 2. Get image data from the filter canvas
             const imageData = filterCtx.getImageData(0, 0, canvasWidth, canvasHeight);
             const data = imageData.data;
 
-            // 3. Iterate through pixels and apply duotone mapping
             for (let i = 0; i < data.length; i += 4) {
                 const r = data[i];
                 const g = data[i + 1];
                 const b = data[i + 2];
-                // const a = data[i + 3]; // Alpha - usually keep as is
-
-                // Calculate luminosity (standard formula), normalized to 0.0 - 1.0
                 const luminosity = (0.2126 * r + 0.7152 * g + 0.0722 * b) / 255.0;
 
-                // Interpolate between dark and light colors based on luminosity
-                // We map the image's dark areas to colorDark and light areas to colorLight
                 const newR = Math.round(lerp(colorDark.r, colorLight.r, luminosity));
                 const newG = Math.round(lerp(colorDark.g, colorLight.g, luminosity));
                 const newB = Math.round(lerp(colorDark.b, colorLight.b, luminosity));
 
-                // Set the new pixel color in the ImageData object
                 data[i] = newR;
                 data[i + 1] = newG;
                 data[i + 2] = newB;
-                // Keep original alpha: data[i + 3] = a;
             }
-
-            // 4. Put the modified image data back onto the *target* canvas
             targetCtx.putImageData(imageData, 0, 0);
 
         } catch (e) {
-            // Handle potential errors (e.g., CORS issues with getImageData if image origin is different and no CORS headers)
             console.error("Error processing image data for duotone:", e);
-            // Fallback in case of error
-            drawBackgroundImageCover(targetCtx, img); // Draw original image
+            drawBackgroundImageCover(targetCtx, img);
         }
     }
-    // --- END REVISED Function ---
 
 
     function generateLogos() {
@@ -935,6 +939,7 @@
                 const isDesignatedSolid = designatedBgColor !== 'transparent';
 
                 const originalCompositeOp = ctx.globalCompositeOperation;
+                // Filter property is no longer used for grayscale/duotone, but reset just in case
                 const originalFilter = ctx.filter;
                 const originalSmoothing = ctx.imageSmoothingEnabled;
                 const originalSmoothingQuality = ctx.imageSmoothingQuality;
@@ -945,22 +950,21 @@
                 let actualBgIsImage = false;
                 if (useImageBackground) {
                     if (isGrayscaleEnabled) {
+                        // Use the revised ImageData-based grayscale
                         applyGrayscaleFilter(ctx, backgroundImageObject);
                         actualBgIsImage = true;
                     } else if (isDuotoneEnabled) {
                         let duotoneColor1Hex, duotoneColor2Hex;
-                        // Assign the two colors *not* used for the text
                         if (canvasInfo.textColorRole === COLOR_ROLE_1) {
-                            duotoneColor1Hex = selectedColors[COLOR_ROLE_2]; // Traditionally dark
-                            duotoneColor2Hex = selectedColors[COLOR_ROLE_3]; // Traditionally light
+                            duotoneColor1Hex = selectedColors[COLOR_ROLE_2];
+                            duotoneColor2Hex = selectedColors[COLOR_ROLE_3];
                         } else if (canvasInfo.textColorRole === COLOR_ROLE_2) {
                             duotoneColor1Hex = selectedColors[COLOR_ROLE_1];
                             duotoneColor2Hex = selectedColors[COLOR_ROLE_3];
-                        } else { // textColorRole is COLOR_ROLE_3
+                        } else {
                             duotoneColor1Hex = selectedColors[COLOR_ROLE_1];
                             duotoneColor2Hex = selectedColors[COLOR_ROLE_2];
                         }
-                        // Apply the revised duotone filter
                         applyDuotoneFilter(ctx, backgroundImageObject, duotoneColor1Hex, duotoneColor2Hex);
                         actualBgIsImage = true;
                     } else {
@@ -1063,7 +1067,7 @@
 
                 // Restore original context settings
                 ctx.globalCompositeOperation = originalCompositeOp;
-                ctx.filter = originalFilter;
+                ctx.filter = originalFilter; // Reset just in case
                 ctx.imageSmoothingEnabled = originalSmoothing;
                 ctx.imageSmoothingQuality = originalSmoothingQuality;
                 ctx.letterSpacing = '0px';
@@ -1072,7 +1076,7 @@
     }
 
     function setupCanvasClickEvents() {
-        // (Filename generation logic remains unchanged from previous step)
+        // (Filename generation logic remains unchanged)
         canvases.forEach(canvasInfo => {
             const canvas = document.getElementById(canvasInfo.id);
             if (!canvas) return;
@@ -1111,7 +1115,7 @@
                         const filename = `${word}_${cleanTextColor}-on-${bgDesc}${filterDesc}_${aspectRatio}${sigPart}.png`;
 
 
-                        // iOS Share API / Fallback Logic
+                        // iOS Share API / Fallback Logic (remains unchanged)
                         if (isIOS && navigator.share) {
                             fetch(dataUrl)
                                 .then(res => res.blob())
